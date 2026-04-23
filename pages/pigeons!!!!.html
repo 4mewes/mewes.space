@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>pigeons!!!!</title>
+    <script src="../pigeon/PigeonConfig.js"></script>
+    <script src="../pigeon/MouseTracker.js"></script>
+    <script src="../pigeon/PNGRenderer.js"></script>
+    <script src="../pigeon/Pigeon.js"></script>
+    <style>
+      .surprise-pigeon {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: min(220px, 32vw);
+        will-change: transform;
+      }
+
+      .download-section {
+        margin-top: 70vh;
+        margin-bottom: 120px;
+        text-align: center;
+      }
+
+      .virus-download {
+        display: inline-block;
+        padding: 18px 28px;
+        color: #00ff00;
+        background: #111;
+        border: 4px ridge #ff0000;
+        box-shadow: 0 0 18px #ff0000, 8px 8px 0 #000;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .virus-download:hover {
+        color: #ff0000;
+        background: #00ff00;
+      }
+
+      .download-note {
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>pigeons!!!!</h1>
+    <p><a href="../index.html">Home</a></p>
+    <p>pigeons are important. so I made an chrome extension</p>
+    <img class="surprise-pigeon" src="../media/pigeon/graphics/pause1/pause1_0004.png" alt="A pigeon">
+    <section class="download-section">
+      <a class="virus-download" href="../downloads/pigeons-extension.zip" download>Download now</a>
+      <p class="download-note"><sub>(not a virus just my pigeon extension)</sub></p>
+    </section>
+    <script>
+      const pigeons = [];
+      const spinningPigeon = document.querySelector(".surprise-pigeon");
+      let spinningX = 160;
+      let spinningY = 140;
+      let spinningVelX = 1.4;
+      let spinningVelY = 0.9;
+      let spinningRotation = 0;
+
+      for (let i = 0; i < 3; i++) {
+        pigeons.push(new window.Pigeon(new window.PNGRenderer()));
+      }
+
+      let lastTime = performance.now();
+
+      function tick(now) {
+        const dt = Math.min((now - lastTime) / 16.67, 3);
+        lastTime = now;
+
+        pigeons.forEach((pigeon) => pigeon.update(dt));
+        moveSpinningPigeon(dt);
+        requestAnimationFrame(tick);
+      }
+
+      function moveSpinningPigeon(dt) {
+        const width = spinningPigeon.offsetWidth;
+        const height = spinningPigeon.offsetHeight;
+        const maxX = Math.max(0, window.innerWidth - width);
+        const maxY = Math.max(0, window.innerHeight - height);
+
+        spinningX += spinningVelX * dt;
+        spinningY += spinningVelY * dt;
+        spinningRotation += 1.2 * dt;
+
+        if (spinningX < 0) {
+          spinningVelX *= -1;
+          spinningX = 0;
+        } else if (spinningX > maxX) {
+          spinningVelX *= -1;
+          spinningX = maxX;
+        }
+
+        if (spinningY < 0) {
+          spinningVelY *= -1;
+          spinningY = 0;
+        } else if (spinningY > maxY) {
+          spinningVelY *= -1;
+          spinningY = maxY;
+        }
+
+        spinningPigeon.style.transform = `translate(${spinningX}px, ${spinningY}px) rotate(${spinningRotation}deg)`;
+      }
+
+      requestAnimationFrame(tick);
+    </script>
+  </body>
+</html>

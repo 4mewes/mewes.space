@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>TV</title>
+    <style>
+      .tv {
+        width: min(800px, 100%);
+        margin: 0 auto;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border: 0;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>TV</h1>
+    <p><a href="../index.html">Home</a></p>
+    <p>I am planning to share a playlist of random youtube videos here --</p>
+
+    <div class="tv">
+      <iframe
+        id="player"
+        width="560"
+        height="315"
+        src="https://www.youtube-nocookie.com/embed/IXhmu1aQSOY?controls=0"
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      ></iframe>
+
+      <div class="controls">
+        <button id="previous" type="button" aria-label="Previous video">&larr;</button>
+        <button id="next" type="button" aria-label="Next video">&rarr;</button>
+      </div>
+      <p><a id="youtube-link" href="https://www.youtube.com/watch?v=IXhmu1aQSOY&amp;list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT">Open on YouTube</a></p>
+    </div>
+
+    <script>
+      const videos = [
+        "IXhmu1aQSOY",
+        "4d_FvgQ1csE",
+        "fOIM1_xOSro",
+        "ii6Qf6flkjI",
+        "m2dJv6hqnk0",
+        "sQhbqBdqkDI",
+        "wubkrBd3-gg",
+        "lZbfNtDCHdM",
+        "XYpG5SRzQag",
+        "56EG957YinM",
+        "7IE2kM6vyAw",
+        "iJzPJ-8ejEI",
+        "9CEsoEfzKfI",
+        "iAg4yMangmY",
+        "kK0M74E8PS4",
+        "n7bC_kAR-wU",
+        "6tGjpaqMnR8",
+        "Oi3e3PlEJAs",
+        "Jr58Uf1srfo",
+        "tvjt6Nhvz3g",
+        "fA5D_175vHM",
+        "sWblpsLZ-O8",
+        "HQD2cMVuNWk",
+        "JMA6_Ne_B-g",
+        "3FtkZLDPUDY",
+        "GwGJKNSP8Hk",
+        "wJ3nZ018TWU",
+        "j3qMwnMtnhQ",
+        "4Ji3GmoeLrU",
+        "NM9KFRvA1Vg",
+        "_fW9uWFXRpQ",
+        "x6QV7CjvEe0",
+        "ZVDvowPQMWc",
+        "0DVdDa0qKoc",
+        "NrPg8YNcXpI",
+        "NZh5YxDpuK4",
+        "Bs8vLmo7Rsc",
+        "xchmB7-fKSE",
+        "0pl-1Eap6Qc",
+        "UnURElCzGc0",
+        "kEB11PQ9Eo8",
+        "jErtuROeUzM",
+        "-2Jy24fIEJQ",
+        "t5_9Aa2GD0Q",
+        "Ce5mRvkAePU",
+        "TFwXbp9bLlY",
+        "LcV_1yklA2k",
+        "09wr-JaaVZ8"
+      ];
+
+      const player = document.getElementById("player");
+      const youtubeLink = document.getElementById("youtube-link");
+      let currentVideo = 0;
+
+      function showVideo(index) {
+        currentVideo = (index + videos.length) % videos.length;
+        player.src = `https://www.youtube-nocookie.com/embed/${videos[currentVideo]}?controls=0`;
+        youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
+      }
+
+      document.getElementById("previous").addEventListener("click", () => {
+        showVideo(currentVideo - 1);
+      });
+
+      document.getElementById("next").addEventListener("click", () => {
+        showVideo(currentVideo + 1);
+      });
+    </script>
+  </body>
+</html>

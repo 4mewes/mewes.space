@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Keep your distance</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: #1f2933;
+        background: #f4f7f9;
+      }
+
+      main {
+        width: min(1100px, 100%);
+        margin: 0 auto;
+        padding: 32px 16px;
+      }
+
+      h1 {
+        margin: 0 0 24px;
+        font-size: 32px;
+      }
+
+      .slideshow {
+        position: relative;
+        width: min(800px, 100%);
+        margin: 0 auto;
+        aspect-ratio: 4 / 3;
+      }
+
+      .slideshow img {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: 0;
+      }
+
+      .slideshow img.is-active {
+        opacity: 1;
+      }
+
+      .distance-message {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 16px;
+        overflow: hidden;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .distance-message-track {
+        display: inline-block;
+        min-width: max-content;
+        animation: move-message 12s linear infinite;
+      }
+
+      .distance-message-text {
+        font-style: italic;
+        font-weight: 700;
+      }
+
+      @keyframes move-message {
+        from {
+          transform: translateX(0);
+        }
+
+        to {
+          transform: translateX(-50%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="../index.html">Home</a></p>
+      <div class="slideshow" id="slideshow"></div>
+    </main>
+    <div class="distance-message">
+      <span class="distance-message-track"><span class="distance-message-text">Thanks for practising social distancing!</span> 👁️👄👁️ · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · <span class="distance-message-text">Thanks for practising social distancing!</span> 👁️👄👁️ · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · </span>
+    </div>
+
+    <script>
+      const images = [
+        "../media/distance/IMG_9300.webp",
+        "../media/distance/IMG_9301.webp",
+        "../media/distance/IMG_9302.webp",
+        "../media/distance/IMG_9303.webp",
+        "../media/distance/IMG_9304.webp",
+        "../media/distance/IMG_9305.webp",
+        "../media/distance/IMG_9307.webp",
+        "../media/distance/IMG_9308.webp",
+        "../media/distance/IMG_9309.webp",
+        "../media/distance/IMG_9320.webp",
+        "../media/distance/IMG_9311.webp",
+        "../media/distance/IMG_9313.webp"
+      ];
+
+      const slideshow = document.getElementById("slideshow");
+      const frameDuration = 150;
+      let currentImageIndex = 0;
+      let previousFrameTime = performance.now();
+      const slideshowImages = images.map(createSlideshowImage);
+
+      function createSlideshowImage(imagePath) {
+        const fileName = imagePath.split("/").pop();
+        const image = document.createElement("img");
+
+        image.decoding = "async";
+        image.loading = "eager";
+        image.src = imagePath;
+        image.alt = fileName.replace(/\.[^.]+$/, "").replaceAll("_", " ");
+        image.setAttribute("aria-hidden", "true");
+
+        return image;
+      }
+
+      function showImage(index) {
+        slideshowImages[currentImageIndex].classList.remove("is-active");
+        slideshowImages[currentImageIndex].setAttribute("aria-hidden", "true");
+        currentImageIndex = index;
+        slideshowImages[currentImageIndex].classList.add("is-active");
+        slideshowImages[currentImageIndex].setAttribute("aria-hidden", "false");
+      }
+
+      function waitForImage(image) {
+        if (image.complete && image.naturalWidth > 0) {
+          return Promise.resolve();
+        }
+
+        if (image.decode) {
+          return image.decode().catch(() => undefined);
+        }
+
+        return new Promise((resolve) => {
+          image.onload = resolve;
+          image.onerror = resolve;
+        });
+      }
+
+      function tick(now) {
+        const elapsed = now - previousFrameTime;
+
+        if (elapsed >= frameDuration) {
+          const framesToAdvance = Math.floor(elapsed / frameDuration);
+          const nextImageIndex = (currentImageIndex + framesToAdvance) % slideshowImages.length;
+          previousFrameTime += framesToAdvance * frameDuration;
+          showImage(nextImageIndex);
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      async function startSlideshow() {
+        slideshow.append(...slideshowImages);
+        await Promise.all(slideshowImages.map(waitForImage));
+        slideshowImages[0].classList.add("is-active");
+        slideshowImages[0].setAttribute("aria-hidden", "false");
+        previousFrameTime = performance.now();
+        requestAnimationFrame(tick);
+      }
+
+      startSlideshow();
+    </script>
+  </body>
+</html>

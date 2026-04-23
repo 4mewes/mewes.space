@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>My Website</title>
+    <style>
+      body {
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        place-items: center;
+      }
+
+      nav {
+        position: relative;
+        width: 560px;
+        height: 560px;
+        border-radius: 50%;
+      }
+
+      a {
+        position: absolute;
+        color: #111;
+        text-decoration: none;
+        transform: translate(-50%, -50%);
+      }
+
+      .wobble:hover {
+        animation: wobble 600ms ease-in-out;
+      }
+
+      .spin:hover {
+        animation: spin 700ms linear;
+      }
+
+      .shake:hover {
+        animation: shake 250ms linear;
+      }
+
+      .continued-shake:hover {
+        animation: shake 250ms linear infinite;
+      }
+
+      .short-movement:hover {
+        animation: short-movement 350ms ease-out;
+      }
+
+      .jump:hover {
+        animation: jump 450ms ease-out;
+      }
+
+      .squash:hover {
+        animation: squash 400ms ease-in-out;
+      }
+
+      .orbit:hover {
+        animation: orbit 700ms linear;
+      }
+
+      .blink:hover {
+        animation: blink 600ms steps(2, jump-none);
+      }
+
+      .flip:hover {
+        animation: flip 600ms ease-in-out;
+      }
+
+      .stretch:hover {
+        animation: stretch 450ms ease-in-out;
+      }
+
+      .slide:hover {
+        animation: slide 420ms ease-out;
+      }
+
+      .tilt:hover {
+        animation: tilt 500ms ease-in-out;
+      }
+
+      .pulse:hover {
+        animation: pulse 650ms ease-in-out infinite;
+      }
+
+      .fall:hover {
+        animation: fall 500ms ease-in;
+      }
+
+      .rise:hover {
+        animation: rise 500ms ease-out;
+      }
+
+      .zigzag:hover {
+        animation: zigzag 650ms linear;
+      }
+
+      @keyframes wobble {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+
+        25% {
+          transform: translate(-50%, -50%) rotate(-10deg);
+        }
+
+        75% {
+          transform: translate(-50%, -50%) rotate(10deg);
+        }
+      }
+
+      @keyframes spin {
+        from {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+
+        to {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        25% {
+          transform: translate(calc(-50% - 3px), -50%);
+        }
+
+        50% {
+          transform: translate(calc(-50% + 3px), -50%);
+        }
+
+        75% {
+          transform: translate(-50%, calc(-50% - 2px));
+        }
+      }
+
+      @keyframes short-movement {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        50% {
+          transform: translate(calc(-50% + 18px), calc(-50% - 10px));
+        }
+      }
+
+      @keyframes jump {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        50% {
+          transform: translate(-50%, calc(-50% - 28px));
+        }
+      }
+
+      @keyframes squash {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+
+        35% {
+          transform: translate(-50%, -50%) scale(1.35, 0.7);
+        }
+
+        70% {
+          transform: translate(-50%, -50%) scale(0.8, 1.3);
+        }
+      }
+
+      @keyframes orbit {
+        0% {
+          transform: translate(-50%, -50%) translate(0, 0);
+        }
+
+        25% {
+          transform: translate(-50%, -50%) translate(10px, -10px);
+        }
+
+        50% {
+          transform: translate(-50%, -50%) translate(20px, 0);
+        }
+
+        75% {
+          transform: translate(-50%, -50%) translate(10px, 10px);
+        }
+
+        100% {
+          transform: translate(-50%, -50%) translate(0, 0);
+        }
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes flip {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) rotateY(0deg);
+        }
+
+        50% {
+          transform: translate(-50%, -50%) rotateY(180deg);
+        }
+      }
+
+      @keyframes stretch {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scaleX(1);
+        }
+
+        50% {
+          transform: translate(-50%, -50%) scaleX(1.8);
+        }
+      }
+
+      @keyframes slide {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        50% {
+          transform: translate(calc(-50% - 36px), -50%);
+        }
+      }
+
+      @keyframes tilt {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) skew(0deg);
+        }
+
+        50% {
+          transform: translate(-50%, -50%) skew(-18deg);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+
+        50% {
+          transform: translate(-50%, -50%) scale(1.25);
+        }
+      }
+
+      @keyframes fall {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        50% {
+          transform: translate(-50%, calc(-50% + 34px)) rotate(12deg);
+        }
+      }
+
+      @keyframes rise {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        50% {
+          transform: translate(-50%, calc(-50% - 38px)) scale(0.9);
+        }
+      }
+
+      @keyframes zigzag {
+        0%,
+        100% {
+          transform: translate(-50%, -50%);
+        }
+
+        20% {
+          transform: translate(calc(-50% + 12px), calc(-50% - 8px));
+        }
+
+        40% {
+          transform: translate(calc(-50% - 12px), calc(-50% - 16px));
+        }
+
+        60% {
+          transform: translate(calc(-50% + 12px), calc(-50% - 24px));
+        }
+
+        80% {
+          transform: translate(calc(-50% - 12px), calc(-50% - 8px));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav aria-label="Main links"></nav>
+
+    <script>
+      const links = [
+        { text: "hello", href: "pages/blog.html" },
+        { text: "livecoding", href: "pages/livecoding.html" },
+        { text: "zerstreut", href: "pages/photography.html" },
+        { text: "pigeons!!!!", href: "pages/pigeons!!!!.html" },
+        { text: "TV", href: "pages/tv.html" },
+        { text: "Guestbook", href: "pages/guestbook.html" },
+        { text: "Plumbing-Room", href: "pages/plumbing.html" },
+        { text: "distance", href: "pages/keep-your-distance.html" },
+        { text: "Mathy-Stuff", href: "pages/maths.html" }
+
+      ];
+
+      const nav = document.querySelector("nav");
+      const radius = 350;
+      const center = 280;
+      const animations = [
+        "wobble",
+        "spin",
+        "shake",
+        "continued-shake",
+        "short-movement",
+        "jump",
+        "squash",
+        "orbit",
+        "blink",
+        "flip",
+        "stretch",
+        "slide",
+        "tilt",
+        "pulse",
+        "fall",
+        "rise",
+        "zigzag"
+      ];
+
+      links.forEach((link, index) => {
+        const angle = (index / links.length) * Math.PI * 2 - Math.PI / 2;
+        const a = document.createElement("a");
+
+        a.href = link.href;
+        a.textContent = link.text;
+        a.className = animations[index % animations.length];
+        a.style.left = `${center + Math.cos(angle) * radius}px`;
+        a.style.top = `${center + Math.sin(angle) * radius}px`;
+
+        nav.appendChild(a);
+      });
+    </script>
+  </body>
+</html>
