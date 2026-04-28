@@ -25,174 +25,151 @@
         transform: translate(-50%, -50%);
       }
 
-      .wobble:hover {
+      a > span {
+        display: inline-block;
+      }
+
+      .wobble:hover > span {
         animation: wobble 600ms ease-in-out;
       }
 
-      .spin:hover {
+      .spin:hover > span {
         animation: spin 700ms linear;
       }
 
-      .shake:hover {
-        animation: shake 250ms linear;
-      }
-
-      .continued-shake:hover {
-        animation: shake 250ms linear infinite;
-      }
-
-      .short-movement:hover {
+      .short-movement:hover > span {
         animation: short-movement 350ms ease-out;
       }
 
-      .jump:hover {
+      .jump:hover > span {
         animation: jump 450ms ease-out;
       }
 
-      .squash:hover {
+      .squash:hover > span {
         animation: squash 400ms ease-in-out;
       }
 
-      .orbit:hover {
+      .orbit:hover > span {
         animation: orbit 700ms linear;
       }
 
-      .blink:hover {
+      .blink:hover > span {
         animation: blink 600ms steps(2, jump-none);
       }
 
-      .flip:hover {
+      .flip:hover > span {
         animation: flip 600ms ease-in-out;
       }
 
-      .stretch:hover {
+      .stretch:hover > span {
         animation: stretch 450ms ease-in-out;
       }
 
-      .slide:hover {
+      .slide:hover > span {
         animation: slide 420ms ease-out;
       }
 
-      .tilt:hover {
+      .tilt:hover > span {
         animation: tilt 500ms ease-in-out;
       }
 
-      .pulse:hover {
+      .pulse:hover > span {
         animation: pulse 650ms ease-in-out infinite;
       }
 
-      .fall:hover {
+      .fall:hover > span {
         animation: fall 500ms ease-in;
       }
 
-      .rise:hover {
+      .rise:hover > span {
         animation: rise 500ms ease-out;
       }
 
-      .zigzag:hover {
+      .zigzag:hover > span {
         animation: zigzag 650ms linear;
       }
 
       @keyframes wobble {
         0%,
         100% {
-          transform: translate(-50%, -50%) rotate(0deg);
+          transform: rotate(0deg);
         }
 
         25% {
-          transform: translate(-50%, -50%) rotate(-10deg);
+          transform: rotate(-10deg);
         }
 
         75% {
-          transform: translate(-50%, -50%) rotate(10deg);
+          transform: rotate(10deg);
         }
       }
 
       @keyframes spin {
         from {
-          transform: translate(-50%, -50%) rotate(0deg);
+          transform: rotate(0deg);
         }
 
         to {
-          transform: translate(-50%, -50%) rotate(360deg);
-        }
-      }
-
-      @keyframes shake {
-        0%,
-        100% {
-          transform: translate(-50%, -50%);
-        }
-
-        25% {
-          transform: translate(calc(-50% - 3px), -50%);
-        }
-
-        50% {
-          transform: translate(calc(-50% + 3px), -50%);
-        }
-
-        75% {
-          transform: translate(-50%, calc(-50% - 2px));
+          transform: rotate(360deg);
         }
       }
 
       @keyframes short-movement {
         0%,
         100% {
-          transform: translate(-50%, -50%);
+          transform: translate(0, 0);
         }
 
         50% {
-          transform: translate(calc(-50% + 18px), calc(-50% - 10px));
+          transform: translate(18px, -10px);
         }
       }
 
       @keyframes jump {
         0%,
         100% {
-          transform: translate(-50%, -50%);
+          transform: translate(0, 0);
         }
 
         50% {
-          transform: translate(-50%, calc(-50% - 28px));
+          transform: translate(0, -28px);
         }
       }
 
       @keyframes squash {
         0%,
         100% {
-          transform: translate(-50%, -50%) scale(1);
+          transform: scale(1);
         }
 
         35% {
-          transform: translate(-50%, -50%) scale(1.35, 0.7);
+          transform: scale(1.35, 0.7);
         }
 
         70% {
-          transform: translate(-50%, -50%) scale(0.8, 1.3);
+          transform: scale(0.8, 1.3);
         }
       }
 
       @keyframes orbit {
         0% {
-          transform: translate(-50%, -50%) translate(0, 0);
+          transform: translate(0, 0);
         }
 
         25% {
-          transform: translate(-50%, -50%) translate(10px, -10px);
+          transform: translate(10px, -10px);
         }
 
         50% {
-          transform: translate(-50%, -50%) translate(20px, 0);
+          transform: translate(20px, 0);
         }
 
         75% {
-          transform: translate(-50%, -50%) translate(10px, 10px);
+          transform: translate(10px, 10px);
         }
 
         100% {
-          transform: translate(-50%, -50%) translate(0, 0);
+          transform: translate(0, 0);
         }
       }
 
@@ -210,100 +187,100 @@
       @keyframes flip {
         0%,
         100% {
-          transform: translate(-50%, -50%) rotateY(0deg);
+          transform: rotateY(0deg);
         }
 
         50% {
-          transform: translate(-50%, -50%) rotateY(180deg);
+          transform: rotateY(180deg);
         }
       }
 
       @keyframes stretch {
         0%,
         100% {
-          transform: translate(-50%, -50%) scaleX(1);
+          transform: scaleX(1);
         }
 
         50% {
-          transform: translate(-50%, -50%) scaleX(1.8);
+          transform: scaleX(1.8);
         }
       }
 
       @keyframes slide {
         0%,
         100% {
-          transform: translate(-50%, -50%);
+          transform: translate(0, 0);
         }
 
         50% {
-          transform: translate(calc(-50% - 36px), -50%);
+          transform: translate(-36px, 0);
         }
       }
 
       @keyframes tilt {
         0%,
         100% {
-          transform: translate(-50%, -50%) skew(0deg);
+          transform: skew(0deg);
         }
 
         50% {
-          transform: translate(-50%, -50%) skew(-18deg);
+          transform: skew(-18deg);
         }
       }
 
       @keyframes pulse {
         0%,
         100% {
-          transform: translate(-50%, -50%) scale(1);
+          transform: scale(1);
         }
 
         50% {
-          transform: translate(-50%, -50%) scale(1.25);
+          transform: scale(1.25);
         }
       }
 
       @keyframes fall {
         0%,
         100% {
-          transform: translate(-50%, -50%);
+          transform: translate(0, 0);
         }
 
         50% {
-          transform: translate(-50%, calc(-50% + 34px)) rotate(12deg);
+          transform: translate(0, 34px) rotate(12deg);
         }
       }
 
       @keyframes rise {
         0%,
         100% {
-          transform: translate(-50%, -50%);
+          transform: translate(0, 0);
         }
 
         50% {
-          transform: translate(-50%, calc(-50% - 38px)) scale(0.9);
+          transform: translate(0, -38px) scale(0.9);
         }
       }
 
       @keyframes zigzag {
         0%,
         100% {
-          transform: translate(-50%, -50%);
+          transform: translate(0, 0);
         }
 
         20% {
-          transform: translate(calc(-50% + 12px), calc(-50% - 8px));
+          transform: translate(12px, -8px);
         }
 
         40% {
-          transform: translate(calc(-50% - 12px), calc(-50% - 16px));
+          transform: translate(-12px, -16px);
         }
 
         60% {
-          transform: translate(calc(-50% + 12px), calc(-50% - 24px));
+          transform: translate(12px, -24px);
         }
 
         80% {
-          transform: translate(calc(-50% - 12px), calc(-50% - 8px));
+          transform: translate(-12px, -8px);
         }
       }
     </style>
@@ -331,8 +308,6 @@
       const animations = [
         "wobble",
         "spin",
-        "shake",
-        "continued-shake",
         "short-movement",
         "jump",
         "squash",
@@ -351,12 +326,14 @@
       links.forEach((link, index) => {
         const angle = (index / links.length) * Math.PI * 2 - Math.PI / 2;
         const a = document.createElement("a");
+        const label = document.createElement("span");
 
         a.href = link.href;
-        a.textContent = link.text;
         a.className = animations[index % animations.length];
         a.style.left = `${center + Math.cos(angle) * radius}px`;
         a.style.top = `${center + Math.sin(angle) * radius}px`;
+        label.textContent = link.text;
+        a.appendChild(label);
 
         nav.appendChild(a);
       });

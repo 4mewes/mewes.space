@@ -6,20 +6,21 @@
     <title>TV</title>
     <style>
       .tv {
-        width: min(800px, 100%);
+        width: min(1100px, 100%);
         margin: 0 auto;
       }
 
       iframe {
         display: block;
         width: 100%;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 4 / 3;
         border: 0;
       }
 
       .controls {
         display: flex;
         justify-content: space-between;
+        gap: 12px;
         margin-top: 12px;
       }
     </style>
@@ -27,14 +28,14 @@
   <body>
     <h1>TV</h1>
     <p><a href="../index.html">Home</a></p>
-    <p>I am planning to share a playlist of random youtube videos here --</p>
+    <p>sometimes there is a movie playing</p>
 
     <div class="tv">
       <iframe
         id="player"
         width="560"
         height="315"
-        src="https://www.youtube-nocookie.com/embed/IXhmu1aQSOY?controls=0"
+        src="https://www.youtube-nocookie.com/embed/IXhmu1aQSOY?controls=0&playsinline=1&rel=0"
         title="YouTube video player"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -43,6 +44,7 @@
       ></iframe>
 
       <div class="controls">
+        <button id="watch" type="button">watch</button>
         <button id="previous" type="button" aria-label="Previous video">&larr;</button>
         <button id="next" type="button" aria-label="Next video">&rarr;</button>
       </div>
@@ -103,13 +105,25 @@
 
       const player = document.getElementById("player");
       const youtubeLink = document.getElementById("youtube-link");
+      const watchButton = document.getElementById("watch");
       let currentVideo = 0;
+      let canAutoplay = false;
 
-      function showVideo(index) {
+      function getEmbedUrl(videoId, autoplay = canAutoplay) {
+        const autoplayParam = autoplay ? "&autoplay=1" : "";
+        return `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&playsinline=1&rel=0${autoplayParam}`;
+      }
+
+      function showVideo(index, autoplay = canAutoplay) {
         currentVideo = (index + videos.length) % videos.length;
-        player.src = `https://www.youtube-nocookie.com/embed/${videos[currentVideo]}?controls=0`;
+        player.src = getEmbedUrl(videos[currentVideo], autoplay);
         youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
       }
+
+      watchButton.addEventListener("click", () => {
+        canAutoplay = true;
+        showVideo(currentVideo, true);
+      });
 
       document.getElementById("previous").addEventListener("click", () => {
         showVideo(currentVideo - 1);

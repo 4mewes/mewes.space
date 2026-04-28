@@ -53,6 +53,11 @@
         image-rendering: pixelated;
         text-transform: uppercase;
         animation: hover-around 18s linear infinite;
+        animation-play-state: paused;
+      }
+
+      #play.is-playing {
+        animation-play-state: running;
       }
 
       #play:active {
@@ -569,6 +574,12 @@ $: s("white").gain(saw.slow(2)).att(.2).room(2)`
         const playButton = document.getElementById("play");
         playButton.style.top = `${20 + Math.random() * 60}vh`;
 
+        function syncPlayButton() {
+          const isPlaying = Boolean(repl.editor && repl.editor.repl.scheduler.started);
+          playButton.textContent = isPlaying ? "Stop" : "Play";
+          playButton.classList.toggle("is-playing", isPlaying);
+        }
+
         function showSong(index) {
           const wasPlaying = repl.editor && repl.editor.repl.scheduler.started;
           currentSong = (index + visibleSongs.length) % visibleSongs.length;
@@ -576,19 +587,20 @@ $: s("white").gain(saw.slow(2)).att(.2).room(2)`
 
           if (wasPlaying) {
             repl.editor.evaluate();
-            playButton.textContent = "Stop";
           }
+
+          syncPlayButton();
         }
 
         playButton.addEventListener("click", async () => {
           if (repl.editor.repl.scheduler.started) {
             await repl.editor.stop();
-            playButton.textContent = "Play";
+            syncPlayButton();
             return;
           }
 
           await repl.editor.evaluate();
-          playButton.textContent = "Stop";
+          syncPlayButton();
         });
 
         document.getElementById("previous-song").addEventListener("click", () => {
