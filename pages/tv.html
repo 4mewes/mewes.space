@@ -37,9 +37,36 @@
       }
 
       .controls {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 12px;
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: visible;
+      }
+
+      .controls button {
+        position: absolute;
+        top: 50%;
+        z-index: 1;
+        display: block;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        transform: translateY(-50%);
+        pointer-events: auto;
+      }
+
+      .controls button img {
+        display: block;
+        width: 84px;
+        height: auto;
+      }
+
+      #previous {
+        left: -96px;
+      }
+
+      #next {
+        right: -96px;
       }
 
       @media (max-width: 900px) {
@@ -47,12 +74,24 @@
           height: 70vh;
           min-height: 0;
         }
+
+        .controls button img {
+          width: 64px;
+        }
+
+        #previous {
+          left: -72px;
+        }
+
+        #next {
+          right: -72px;
+        }
       }
     </style>
   </head>
   <body>
     <p><a href="../index.html">Home</a></p>
-    <p>sometimes there is a movie playing</p>
+    <p>like doomscrolling but curated by me</p>
 
     <div class="tv">
       <div class="player-frame">
@@ -68,65 +107,67 @@
           referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen
         ></iframe>
-      </div>
-
-      <div class="controls">
-        <button id="previous" type="button" aria-label="Previous video">&larr;</button>
-        <button id="next" type="button" aria-label="Next video">&rarr;</button>
+        <div class="controls">
+          <button id="previous" type="button" aria-label="Previous video">
+            <img src="../media/gifs/gifs-used/point.left.gif" alt="">
+          </button>
+          <button id="next" type="button" aria-label="Next video">
+            <img src="../media/gifs/gifs-used/point.right.gif" alt="">
+          </button>
+        </div>
       </div>
       <p><a id="youtube-link" href="https://www.youtube.com/watch?v=IXhmu1aQSOY&amp;list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT">Open on YouTube</a></p>
     </div>
 
     <script>
       const videos = [
-        "IXhmu1aQSOY",
-        "4d_FvgQ1csE",
-        "fOIM1_xOSro",
-        "ii6Qf6flkjI",
         "m2dJv6hqnk0",
-        "sQhbqBdqkDI",
-        "wubkrBd3-gg",
-        "lZbfNtDCHdM",
+        "Oi3e3PlEJAs",
+        "IXhmu1aQSOY",
         "XYpG5SRzQag",
-        "56EG957YinM",
         "7IE2kM6vyAw",
+        "ii6Qf6flkjI",
+        "wubkrBd3-gg",
+        "sQhbqBdqkDI",
+        "56EG957YinM",
+        "lZbfNtDCHdM",
         "iJzPJ-8ejEI",
         "9CEsoEfzKfI",
-        "iAg4yMangmY",
         "kK0M74E8PS4",
         "n7bC_kAR-wU",
         "6tGjpaqMnR8",
-        "Oi3e3PlEJAs",
-        "Jr58Uf1srfo",
         "tvjt6Nhvz3g",
-        "fA5D_175vHM",
         "sWblpsLZ-O8",
+        "0pl-1Eap6Qc",
         "HQD2cMVuNWk",
-        "JMA6_Ne_B-g",
-        "3FtkZLDPUDY",
-        "GwGJKNSP8Hk",
-        "wJ3nZ018TWU",
-        "j3qMwnMtnhQ",
-        "4Ji3GmoeLrU",
-        "NM9KFRvA1Vg",
         "_fW9uWFXRpQ",
+        "JMA6_Ne_B-g",
+        "4Ji3GmoeLrU",
+        "3FtkZLDPUDY",
+        "j3qMwnMtnhQ",
+        "GwGJKNSP8Hk",
         "x6QV7CjvEe0",
-        "ZVDvowPQMWc",
+        "4d_FvgQ1csE",
         "0DVdDa0qKoc",
+        "wJ3nZ018TWU",
         "NrPg8YNcXpI",
+        "fA5D_175vHM",
+        "ZVDvowPQMWc",
         "NZh5YxDpuK4",
+        "kEB11PQ9Eo8",
+        "NM9KFRvA1Vg",
         "Bs8vLmo7Rsc",
         "xchmB7-fKSE",
-        "0pl-1Eap6Qc",
         "UnURElCzGc0",
-        "kEB11PQ9Eo8",
         "jErtuROeUzM",
+        "TFwXbp9bLlY",
         "-2Jy24fIEJQ",
         "t5_9Aa2GD0Q",
-        "Ce5mRvkAePU",
-        "TFwXbp9bLlY",
+        "09wr-JaaVZ8",
         "LcV_1yklA2k",
-        "09wr-JaaVZ8"
+        "vdtNY7krS7Y",
+        "_WMB-qiSGmc",
+        "rFtYzVJcWyA"
       ];
 
       const player = document.getElementById("player");
