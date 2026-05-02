@@ -10,41 +10,67 @@
         margin: 0 auto;
       }
 
+      .player-frame {
+        position: relative;
+        width: 100%;
+      }
+
       iframe {
         display: block;
         width: 100%;
-        aspect-ratio: 4 / 3;
+        height: min(82vh, 900px);
+        min-height: 720px;
         border: 0;
+      }
+
+      #watch {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 1;
+        transform: translate(-50%, -50%);
+        padding: 14px 28px;
+      }
+
+      #watch.is-hidden {
+        display: none;
       }
 
       .controls {
         display: flex;
         justify-content: space-between;
-        gap: 12px;
         margin-top: 12px;
+      }
+
+      @media (max-width: 900px) {
+        iframe {
+          height: 70vh;
+          min-height: 0;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>TV</h1>
     <p><a href="../index.html">Home</a></p>
     <p>sometimes there is a movie playing</p>
 
     <div class="tv">
-      <iframe
-        id="player"
-        width="560"
-        height="315"
-        src="https://www.youtube-nocookie.com/embed/IXhmu1aQSOY?controls=0&playsinline=1&rel=0"
-        title="YouTube video player"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-      ></iframe>
+      <div class="player-frame">
+        <button id="watch" type="button">watch</button>
+        <iframe
+          id="player"
+          width="560"
+          height="315"
+          src="https://www.youtube-nocookie.com/embed/IXhmu1aQSOY?controls=0&playsinline=1&rel=0"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
 
       <div class="controls">
-        <button id="watch" type="button">watch</button>
         <button id="previous" type="button" aria-label="Previous video">&larr;</button>
         <button id="next" type="button" aria-label="Next video">&rarr;</button>
       </div>
@@ -122,6 +148,7 @@
 
       watchButton.addEventListener("click", () => {
         canAutoplay = true;
+        watchButton.classList.add("is-hidden");
         showVideo(currentVideo, true);
       });
 
