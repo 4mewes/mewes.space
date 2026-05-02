@@ -28,8 +28,17 @@
         top: 50%;
         left: 50%;
         z-index: 1;
+        display: block;
+        padding: 0;
+        background: transparent;
+        border: 0;
         transform: translate(-50%, -50%);
-        padding: 14px 28px;
+      }
+
+      #watch img {
+        display: block;
+        width: 170px;
+        height: auto;
       }
 
       #watch.is-hidden {
@@ -59,6 +68,15 @@
         display: block;
         width: 84px;
         height: auto;
+        transition: transform 120ms ease;
+      }
+
+      #previous:active img {
+        transform: translateX(-6px);
+      }
+
+      #next:active img {
+        transform: translateX(6px);
       }
 
       #previous {
@@ -95,12 +113,14 @@
 
     <div class="tv">
       <div class="player-frame">
-        <button id="watch" type="button">watch</button>
+        <button id="watch" type="button" aria-label="Watch">
+          <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
+        </button>
         <iframe
           id="player"
           width="560"
           height="315"
-          src="https://www.youtube-nocookie.com/embed/IXhmu1aQSOY?controls=0&playsinline=1&rel=0"
+          src="about:blank"
           title="YouTube video player"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -116,7 +136,7 @@
           </button>
         </div>
       </div>
-      <p><a id="youtube-link" href="https://www.youtube.com/watch?v=IXhmu1aQSOY&amp;list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT">Open on YouTube</a></p>
+      <p><a id="youtube-link" href="#">Open on YouTube</a></p>
     </div>
 
     <script>
@@ -200,6 +220,8 @@
       document.getElementById("next").addEventListener("click", () => {
         showVideo(currentVideo + 1);
       });
+
+      showVideo(currentVideo, false);
     </script>
   </body>
 </html>
