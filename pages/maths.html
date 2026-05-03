@@ -233,6 +233,11 @@
       }
 
       .dsp-controls {
+        display: grid;
+        gap: 8px;
+      }
+
+      .dsp-row {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -402,7 +407,7 @@
             <h2>Turing Machine</h2>
           </div>
           <p class="card-copy">A Turing machine is the most minimal version of a computer: a head reads and writes symbols on a tape one step at a time this simple model can run programs like any computers would do.
-            read more here: <a href="https://en.wikipedia.org/wiki/Turing_machine">https://en.wikipedia.org/wiki/Turing_machine</a></p>
+            read more here: <a href="https://en.wikipedia.org/wiki/Turing_machine">en.wikipedia.org/wiki/Turing_machine</a></p>
           <p>This particular turing machine follows this logic table:</p>
             <table class="tm-table">
             <tr>
@@ -436,40 +441,39 @@
           <div class="card-head">
             <h2>FFT + Filtering</h2>
           </div>
-          <p class="card-copy">Apply Fourier transforms and simple filters to a few generic signals and compare the raw input, spectrum, and filtered output.</p>
+          <p class="card-copy">Apply Fourier transforms and simple filters to a few generic signals and compare the raw input, spectrum, and filtered output. read more here: <a href="https://en.wikipedia.org/wiki/Fast_Fourier_transform">en.wikipedia.org/wiki/Fast_Fourier_transform</a></p>
           <div class="dsp-controls">
-            <label for="dsp-function">function</label>
-            <select id="dsp-function">
-              <option value="sine">sine</option>
-              <option value="two-sines">two sines</option>
-              <option value="gaussian">gaussian</option>
-              <option value="ramp">saw</option>
-              <option value="pulse">square</option>
-            </select>
-            <label for="dsp-param" id="dsp-param-label">frequency</label>
-            <input id="dsp-param" type="range" min="1" max="16" step="1" value="4">
-            <span class="dsp-readout" id="dsp-param-readout">frequency=4</span>
-            <label for="dsp-filter">filter</label>
-            <select id="dsp-filter">
-              <option value="none">none</option>
-              <option value="low">low-pass</option>
-              <option value="high">high-pass</option>
-              <option value="band">band-pass</option>
-            </select>
-            <label for="dsp-low" id="dsp-low-label">low bin</label>
-            <input id="dsp-low" type="range" min="0" max="64" step="1" value="6">
-            <span class="dsp-readout" id="dsp-low-readout">6</span>
-            <label for="dsp-high" id="dsp-high-label">high bin</label>
-            <input id="dsp-high" type="range" min="1" max="64" step="1" value="20">
-            <span class="dsp-readout" id="dsp-high-readout">20</span>
+            <div class="dsp-row">
+              <label for="dsp-function">function</label>
+              <select id="dsp-function">
+                <option value="sine">sine</option>
+                <option value="two-sines">two sines</option>
+                <option value="gaussian">gaussian</option>
+                <option value="ramp" selected>saw</option>
+                <option value="pulse">square</option>
+              </select>
+              <label for="dsp-param" id="dsp-param-label">frequency</label>
+              <input id="dsp-param" type="range" min="1" max="16" step="1" value="4">
+              <span class="dsp-readout" id="dsp-param-readout">frequency=4</span>
+            </div>
+            <div class="dsp-row">
+              <label for="dsp-filter">filter</label>
+              <select id="dsp-filter">
+                <option value="none">none</option>
+                <option value="low">low-pass</option>
+                <option value="high">high-pass</option>
+                <option value="band">band-pass</option>
+              </select>
+              <label for="dsp-low" id="dsp-low-label">low cutoff</label>
+              <input id="dsp-low" type="range" min="0" max="64" step="1" value="6">
+              <span class="dsp-readout" id="dsp-low-readout">6</span>
+              <label for="dsp-high" id="dsp-high-label">high cutoff</label>
+              <input id="dsp-high" type="range" min="1" max="64" step="1" value="20">
+              <span class="dsp-readout" id="dsp-high-readout">20</span>
+            </div>
           </div>
-          <div class="dsp-pair">
-            <div class="frame">
-              <canvas id="fft-plot" width="500" height="280"></canvas>
-            </div>
-            <div class="frame">
-              <canvas id="filter-plot" width="500" height="280"></canvas>
-            </div>
+          <div class="frame">
+            <canvas id="fft-plot" width="500" height="280"></canvas>
           </div>
         </article>
       </section>
@@ -1000,13 +1004,14 @@
         const highReadout = document.getElementById("dsp-high-readout");
         const fftCanvas = document.getElementById("fft-plot");
         const fftCtx = fftCanvas.getContext("2d");
-        const filterCanvas = document.getElementById("filter-plot");
-        const filterCtx = filterCanvas.getContext("2d");
         const count = 128;
 
         const parameter = Number(parameterInput.value);
-        const lowCut = Math.min(Number(lowInput.value), Number(highInput.value));
-        const highCut = Math.max(Number(lowInput.value), Number(highInput.value));
+        const filterMode = filterSelect.value;
+        const lowValue = Number(lowInput.value);
+        const highValue = Number(highInput.value);
+        const bandLow = Math.min(lowValue, highValue);
+        const bandHigh = Math.max(lowValue, highValue);
         const functionLabels = {
           sine: "frequency",
           "two-sines": "base freq",
@@ -1016,10 +1021,10 @@
         };
         parameterLabel.textContent = functionLabels[functionSelect.value];
         parameterReadout.textContent = `${functionLabels[functionSelect.value]}=${parameter}`;
-        lowLabel.textContent = filterSelect.value === "high" ? "cutoff" : "low bin";
-        highLabel.textContent = filterSelect.value === "low" ? "cutoff" : "high bin";
-        lowReadout.textContent = String(lowCut);
-        highReadout.textContent = String(highCut);
+        lowLabel.textContent = "low cutoff";
+        highLabel.textContent = "high cutoff";
+        lowReadout.textContent = filterMode === "none" ? "-" : String(lowValue);
+        highReadout.textContent = filterMode === "none" ? "-" : String(highValue);
 
         const signal = generateDspSignal(functionSelect.value, parameter, count);
         const transformed = fftRecursive(signal.map((value) => ({ re: value, im: 0 })));
@@ -1027,12 +1032,12 @@
           const mirroredIndex = index <= count / 2 ? index : count - index;
           let keep = true;
 
-          if (filterSelect.value === "low") {
-            keep = mirroredIndex <= highCut;
-          } else if (filterSelect.value === "high") {
-            keep = mirroredIndex >= lowCut;
-          } else if (filterSelect.value === "band") {
-            keep = mirroredIndex >= lowCut && mirroredIndex <= highCut;
+          if (filterMode === "low") {
+            keep = mirroredIndex <= lowValue;
+          } else if (filterMode === "high") {
+            keep = mirroredIndex >= highValue;
+          } else if (filterMode === "band") {
+            keep = mirroredIndex >= bandLow && mirroredIndex <= bandHigh;
           }
 
           return keep ? value : { re: 0, im: 0 };
@@ -1054,19 +1059,12 @@
           -1.2,
           1.2
         );
+        drawSeriesOnCanvas(fftCtx, fftCanvas.width, fftCanvas.height, filteredSignal, "#1f8a55", -1.2, 1.2);
         fftCtx.fillStyle = "#121212";
         fftCtx.font = "12px 'Courier New', monospace";
         fftCtx.fillText("blue=input signal", 36, 18);
         fftCtx.fillText("red=fft magnitude", 36, 34);
-
-        filterCtx.clearRect(0, 0, filterCanvas.width, filterCanvas.height);
-        drawAxes(filterCtx, filterCanvas.width, filterCanvas.height);
-        drawSeriesOnCanvas(filterCtx, filterCanvas.width, filterCanvas.height, signal, "rgba(18,18,18,0.35)", -1.2, 1.2);
-        drawSeriesOnCanvas(filterCtx, filterCanvas.width, filterCanvas.height, filteredSignal, "#1f8a55", -1.2, 1.2);
-        filterCtx.fillStyle = "#121212";
-        filterCtx.font = "12px 'Courier New', monospace";
-        filterCtx.fillText("gray=original", 36, 18);
-        filterCtx.fillText("green=filtered output", 36, 34);
+        fftCtx.fillText("green=filtered output", 36, 50);
       }
 
       function initSignalProcessing() {
