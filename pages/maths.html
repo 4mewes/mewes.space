@@ -2,11 +2,1409 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Maths</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: #111;
+        background: #fff;
+        font-family: "Times New Roman", serif;
+      }
+
+      main {
+        width: min(760px, calc(100vw - 32px));
+        margin: 48px auto 56px;
+      }
+
+      .home-link {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+      }
+
+      .intro {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .intro p {
+        max-width: 70ch;
+      }
+
+      .intro-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .card {
+        display: grid;
+        gap: 12px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .card-head {
+        display: grid;
+        gap: 4px;
+      }
+
+      .card-head span {
+        font-size: 0.9rem;
+        font-style: italic;
+      }
+
+      .card-copy {
+        min-height: 3.5em;
+      }
+
+      .frame {
+        position: relative;
+        overflow: hidden;
+        min-height: 280px;
+        padding: 0;
+        border: 1px solid #111;
+        background: #fff;
+      }
+
+      .collatz-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 0.95rem;
+      }
+
+      .collatz-log-toggle {
+        margin-left: auto;
+      }
+
+      .collatz-controls button {
+        font: inherit;
+      }
+
+      .collatz-controls input {
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+        width: 120px;
+        padding: 2px 4px;
+        border: 1px solid #111;
+      }
+
+      .collatz-controls button {
+        padding: 2px 8px;
+        border: 1px solid #111;
+        background: #fff;
+      }
+
+      .collatz-controls button.is-running {
+        background: #111;
+        color: #fff;
+      }
+
+      .collatz-controls label:has(input[type="checkbox"]) {
+        display: inline-flex;
+        align-items: center;
+        gap: 1px;
+      }
+
+      .collatz-controls input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        padding: 0;
+      }
+
+      .collatz-checkbox-text {
+        margin-left: 1px;
+      }
+
+      .collatz-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+      }
+
+      .collatz-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .collatz-legend-swatch {
+        width: 12px;
+        height: 12px;
+        border: 1px solid #111;
+      }
+
+      .collatz-definition img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .staircase-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .staircase-controls input {
+        width: 180px;
+      }
+
+      .staircase-readout {
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+      }
+
+      .staircase-pair {
+        display: grid;
+        gap: 8px;
+      }
+
+      .cantor-strip {
+        min-height: 74px;
+      }
+
+      .life-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .life-controls button {
+        font: inherit;
+        padding: 2px 8px;
+        border: 1px solid #111;
+        background: #fff;
+      }
+
+      .life-controls button.is-running {
+        background: #111;
+        color: #fff;
+      }
+
+      .life-controls input {
+        width: 140px;
+      }
+
+      .life-readout {
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+      }
+
+      .tm-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tm-controls button {
+        font: inherit;
+        padding: 2px 8px;
+        border: 1px solid #111;
+        background: #fff;
+      }
+
+      .tm-controls button.is-running {
+        background: #111;
+        color: #fff;
+      }
+
+      .dsp-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .dsp-controls select,
+      .dsp-controls input {
+        font: inherit;
+      }
+
+      .dsp-controls input[type="range"] {
+        width: 140px;
+      }
+
+      .dsp-readout {
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+      }
+
+      .dsp-pair {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      canvas,
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      #life {
+        image-rendering: pixelated;
+      }
+
+      .tape {
+        display: grid;
+        gap: 12px;
+        align-content: center;
+        min-height: 280px;
+      }
+
+      .tape-row {
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        gap: 6px;
+      }
+
+      .cell {
+        display: grid;
+        place-items: center;
+        aspect-ratio: 1;
+        border: 1px solid #111;
+        background: #fff;
+        font-size: 1.2rem;
+      }
+
+      .cell.head {
+        background: #ffeaa6;
+      }
+
+      .machine-readout {
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+      }
+
+      .tm-table {
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        width: fit-content;
+      }
+
+      .tm-table th,
+      .tm-table td {
+        padding: 2px 6px;
+        border: 1px solid #111;
+        text-align: center;
+      }
+
+      @media (max-width: 880px) {
+        .frame,
+        .tape {
+          min-height: 220px;
+        }
+
+        .dsp-pair {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
-    <h1>Maths</h1>
-    <p><a href="../index.html">Home</a></p>
-    <p>1 + 1 = 2</p>
+    <p class="home-link"><a href="../index.html">Home</a></p>
+    <main>
+      <section class="intro">
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~math is universal~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <div class="card-head">
+            <h2>Collatz Sequence Plot</h2>
+          </div>
+          <p class="card-copy"> The Collatz conjecture claims that all collatz sequences eventually converge to 1 given any positive start integer. Collatz sequence is defined as follows:</p>
+          <div class="collatz-definition">
+            <img src="../media/maths/collatz-def/8b55c72bf3bdd32024ac1831f6cc88f6d5510104.svg" alt="Definition of the Collatz sequence">
+          </div>
+          <p class="card-copy">This is formally unproven, however it was already shown to be true for all positive integers up until 2.36×10^21! read more here: <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">wikipedia.org/wiki/Collatz_conjecture</a></p>
+          <div class="collatz-controls">
+            <label for="collatz-input">start value</label>
+            <input id="collatz-input" type="number" min="1" step="1" value="27">
+            <button id="collatz-draw" type="button">draw</button>
+            <button id="collatz-autoplay" type="button">auto 1-50</button>
+            <button id="collatz-clear" type="button">clear</button>
+            <label class="collatz-log-toggle"><input id="collatz-log" type="checkbox"><span class="collatz-checkbox-text">log scale</span></label>
+          </div>
+          <div class="collatz-legend" id="collatz-legend"></div>
+          <div class="frame">
+            <canvas id="collatz" width="500" height="280"></canvas>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>Game Of Life</h2>
+          </div>
+          <p class="card-copy">Conway's Game of Life is a cellular automaton where simple local rules create shifting patterns, oscillators, and moving structures. read more here: <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life</a></p>
+          <div class="life-controls">
+            <button id="life-play" type="button">play</button>
+            <button id="life-step" type="button">step</button>
+            <button id="life-random" type="button">random</button>
+            <button id="life-clear" type="button">clear</button>
+            <label for="life-speed">speed</label>
+            <input id="life-speed" type="range" min="40" max="400" step="10" value="310">
+            <span class="life-readout" id="life-readout">gen=0 live=0</span>
+          </div>
+          <div class="frame">
+            <canvas id="life" width="500" height="280"></canvas>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>Devil's Staircase</h2>
+          </div>
+          <p class="card-copy">A Cantor-set staircase: flat, then climbing, then flat again, forever. read more here: <a href="https://en.wikipedia.org/wiki/Cantor_function">wikipedia.org/wiki/Cantor_function</a></p>
+          <div class="staircase-controls">
+            <label for="staircase-iteration">iteration</label>
+            <input id="staircase-iteration" type="range" min="0" max="18" step="1" value="8">
+            <span class="staircase-readout" id="staircase-iteration-readout">n=8</span>
+            <span class="staircase-readout" id="staircase-hover-readout">x=0.0000, f(x)=0.0000</span>
+          </div>
+          <div class="staircase-pair">
+            <div class="frame cantor-strip">
+              <svg id="cantor-strip" viewBox="0 0 500 74" aria-label="Cantor set strip"></svg>
+            </div>
+            <div class="frame">
+              <svg id="staircase" viewBox="0 0 500 280" aria-label="Devils staircase plot"></svg>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>Turing Machine</h2>
+          </div>
+          <p class="card-copy">A Turing machine is the most minimal version of a computer: a head reads and writes symbols on a tape one step at a time this simple model can run programs like any computers would do.
+            read more here: <a href="https://en.wikipedia.org/wiki/Turing_machine">https://en.wikipedia.org/wiki/Turing_machine</a></p>
+          <p>This particular turing machine follows this logic table:</p>
+            <table class="tm-table">
+            <tr>
+              <th></th>
+              <th>A</th>
+              <th>B</th>
+            </tr>
+            <tr>
+              <th>0</th>
+              <td>1LB</td>
+              <td>1RA</td>
+            </tr>
+            <tr>
+              <th>1</th>
+              <td>1RA</td>
+              <td>1RHALT</td>
+            </tr>
+          </table>
+          <div class="tm-controls">
+            <button id="tm-play" type="button">pause</button>
+            <button id="tm-step" type="button">step</button>
+            <button id="tm-reset" type="button">reset</button>
+          </div>
+          <div class="frame tape">
+            <div class="tape-row" id="tape-row"></div>
+            <div class="machine-readout" id="machine-readout"></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>FFT + Filtering</h2>
+          </div>
+          <p class="card-copy">Apply Fourier transforms and simple filters to a few generic signals and compare the raw input, spectrum, and filtered output.</p>
+          <div class="dsp-controls">
+            <label for="dsp-function">function</label>
+            <select id="dsp-function">
+              <option value="sine">sine</option>
+              <option value="two-sines">two sines</option>
+              <option value="gaussian">gaussian</option>
+              <option value="ramp">saw</option>
+              <option value="pulse">square</option>
+            </select>
+            <label for="dsp-param" id="dsp-param-label">frequency</label>
+            <input id="dsp-param" type="range" min="1" max="16" step="1" value="4">
+            <span class="dsp-readout" id="dsp-param-readout">frequency=4</span>
+            <label for="dsp-filter">filter</label>
+            <select id="dsp-filter">
+              <option value="none">none</option>
+              <option value="low">low-pass</option>
+              <option value="high">high-pass</option>
+              <option value="band">band-pass</option>
+            </select>
+            <label for="dsp-low" id="dsp-low-label">low bin</label>
+            <input id="dsp-low" type="range" min="0" max="64" step="1" value="6">
+            <span class="dsp-readout" id="dsp-low-readout">6</span>
+            <label for="dsp-high" id="dsp-high-label">high bin</label>
+            <input id="dsp-high" type="range" min="1" max="64" step="1" value="20">
+            <span class="dsp-readout" id="dsp-high-readout">20</span>
+          </div>
+          <div class="dsp-pair">
+            <div class="frame">
+              <canvas id="fft-plot" width="500" height="280"></canvas>
+            </div>
+            <div class="frame">
+              <canvas id="filter-plot" width="500" height="280"></canvas>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      function drawAxes(ctx, width, height) {
+        ctx.strokeStyle = "#8f8a7f";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(30, 12);
+        ctx.lineTo(30, height - 24);
+        ctx.lineTo(width - 12, height - 24);
+        ctx.stroke();
+      }
+
+      function collatzNext(n) {
+        return n % 2 === 0 ? n / 2 : 3 * n + 1;
+      }
+
+      function collatzSequence(start) {
+        const sequence = [start];
+        let value = start;
+        let steps = 0;
+
+        while (value !== 1 && steps < 1000) {
+          value = collatzNext(value);
+          sequence.push(value);
+          steps += 1;
+        }
+
+        return sequence;
+      }
+
+      let collatzTimer = null;
+      let collatzSequenceTimer = null;
+      let collatzAutoplayRunning = false;
+      let collatzDomain = null;
+      const collatzRuns = [];
+      const collatzPalette = ["#1d6fd6", "#cf3f1f", "#1f8a55", "#5f43b2", "#c28600", "#008b8b", "#bb2d73", "#444"];
+
+      function collatzScaleValue(value, useLogScale) {
+        return useLogScale ? Math.log10(value + 1) : value;
+      }
+
+      function renderCollatzLegend() {
+        const legend = document.getElementById("collatz-legend");
+        legend.innerHTML = "";
+
+        collatzRuns.forEach((run) => {
+          const item = document.createElement("span");
+          item.className = "collatz-legend-item";
+          item.innerHTML = `<span class="collatz-legend-swatch" style="background:${run.color}"></span><span>n=${run.start}</span>`;
+          legend.appendChild(item);
+        });
+      }
+
+      function resetCollatzRuns() {
+        collatzRuns.length = 0;
+        collatzDomain = null;
+        renderCollatzLegend();
+      }
+
+      function updateCollatzDomain(sequences) {
+        const maxValue = Math.max(...sequences.flat());
+        const maxLength = Math.max(...sequences.map((sequence) => sequence.length));
+
+        if (!collatzDomain) {
+          collatzDomain = { maxValue, maxLength };
+          return;
+        }
+
+        collatzDomain.maxValue = Math.max(collatzDomain.maxValue, maxValue);
+        collatzDomain.maxLength = Math.max(collatzDomain.maxLength, maxLength);
+      }
+
+      function stopCollatzLineAnimation() {
+        if (collatzTimer) {
+          window.clearTimeout(collatzTimer);
+          collatzTimer = null;
+        }
+      }
+
+      function stopCollatzAnimation() {
+        stopCollatzLineAnimation();
+        if (collatzSequenceTimer) {
+          window.clearTimeout(collatzSequenceTimer);
+          collatzSequenceTimer = null;
+        }
+        collatzAutoplayRunning = false;
+        const autoplayButton = document.getElementById("collatz-autoplay");
+        if (autoplayButton) {
+          autoplayButton.classList.remove("is-running");
+          autoplayButton.textContent = "auto 1-50";
+        }
+      }
+
+      function renderCollatzFrame(ctx, width, height, activeSequence, visibleCount, activeStart) {
+        const useLogScale = document.getElementById("collatz-log").checked;
+        const visibleSequences = collatzRuns.map((run) => run.sequence);
+        if (activeSequence) {
+          visibleSequences.push(activeSequence.slice(0, Math.max(visibleCount, 1)));
+        }
+        updateCollatzDomain(visibleSequences);
+        const maxValue = collatzScaleValue(collatzDomain.maxValue, useLogScale);
+        const xSpan = Math.max(collatzDomain.maxLength - 1, 1);
+
+        ctx.clearRect(0, 0, width, height);
+        drawAxes(ctx, width, height);
+
+        ctx.fillStyle = "#121212";
+        ctx.font = "12px 'Courier New', monospace";
+        for (let i = 0; i <= 4; i += 1) {
+          const ratio = i / 4;
+          const y = height - 24 - ratio * (height - 42);
+          const scaledValue = ratio * maxValue;
+          const label = useLogScale
+            ? Math.round((10 ** scaledValue) - 1)
+            : Math.round(scaledValue);
+          ctx.fillText(String(label), 4, y + 4);
+        }
+
+        collatzRuns.forEach((run) => {
+          ctx.strokeStyle = run.color;
+          ctx.lineWidth = 1.2;
+          ctx.globalAlpha = 0.45;
+          ctx.beginPath();
+          run.sequence.forEach((value, index) => {
+            const x = 30 + (index / xSpan) * (width - 42);
+            const y = height - 24 - (collatzScaleValue(value, useLogScale) / maxValue) * (height - 42);
+            if (index === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          });
+          ctx.stroke();
+
+          run.sequence.forEach((value, index) => {
+            const x = 30 + (index / xSpan) * (width - 42);
+            const y = height - 24 - (collatzScaleValue(value, useLogScale) / maxValue) * (height - 42);
+            ctx.fillStyle = run.color;
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+        });
+
+        if (activeSequence) {
+          const activeColor = collatzPalette[collatzRuns.length % collatzPalette.length];
+          ctx.strokeStyle = activeColor;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          activeSequence.slice(0, visibleCount).forEach((value, index) => {
+            const x = 30 + (index / xSpan) * (width - 42);
+            const y = height - 24 - (collatzScaleValue(value, useLogScale) / maxValue) * (height - 42);
+            if (index === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          });
+          ctx.stroke();
+
+          activeSequence.slice(0, visibleCount).forEach((value, index) => {
+            const x = 30 + (index / xSpan) * (width - 42);
+            const y = height - 24 - (collatzScaleValue(value, useLogScale) / maxValue) * (height - 42);
+            ctx.fillStyle = activeColor;
+            ctx.beginPath();
+            ctx.arc(x, y, 2.6, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+
+        ctx.font = "14px 'Courier New', monospace";
+        ctx.fillText("step", width - 42, height - 8);
+        ctx.fillText(useLogScale ? "log(value)" : "value", 8, 18);
+        if (activeSequence) {
+          ctx.fillText(`n = ${activeStart}`, 36, 18);
+        }
+      }
+
+      function renderCollatz(start = 27, instant = false) {
+        const canvas = document.getElementById("collatz");
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const sequence = collatzSequence(start);
+        let visibleCount = 1;
+
+        stopCollatzLineAnimation();
+        renderCollatzFrame(ctx, width, height, sequence, visibleCount, start);
+
+        if (instant) {
+          collatzRuns.push({
+            start,
+            sequence,
+            color: collatzPalette[collatzRuns.length % collatzPalette.length]
+          });
+          renderCollatzLegend();
+          renderCollatzFrame(ctx, width, height, null, 0, start);
+          return;
+        }
+
+        function animate() {
+          if (visibleCount >= sequence.length) {
+            collatzRuns.push({
+              start,
+              sequence,
+              color: collatzPalette[collatzRuns.length % collatzPalette.length]
+            });
+            renderCollatzLegend();
+            renderCollatzFrame(ctx, width, height, null, 0, start);
+            collatzTimer = null;
+            return;
+          }
+
+          visibleCount += 1;
+          renderCollatzFrame(ctx, width, height, sequence, visibleCount, start);
+          collatzTimer = window.setTimeout(animate, 45);
+        }
+
+        collatzTimer = window.setTimeout(animate, 45);
+      }
+
+      function autoplayCollatzRange(startValue = 1, endValue = 50) {
+        const input = document.getElementById("collatz-input");
+        const autoplayButton = document.getElementById("collatz-autoplay");
+        let current = startValue;
+
+        stopCollatzAnimation();
+        resetCollatzRuns();
+        collatzAutoplayRunning = true;
+        autoplayButton.classList.add("is-running");
+        autoplayButton.textContent = "stop";
+
+        function runNext() {
+          if (!collatzAutoplayRunning) {
+            return;
+          }
+
+          if (current > endValue) {
+            stopCollatzAnimation();
+            return;
+          }
+
+          input.value = current;
+          renderCollatz(current);
+
+          const sequenceLength = collatzSequence(current).length;
+          current += 1;
+          collatzSequenceTimer = window.setTimeout(runNext, Math.max(sequenceLength * 45 + 180, 260));
+        }
+
+        runNext();
+      }
+
+      function initCollatz() {
+        const input = document.getElementById("collatz-input");
+        const button = document.getElementById("collatz-draw");
+        const autoplayButton = document.getElementById("collatz-autoplay");
+        const clearButton = document.getElementById("collatz-clear");
+        const logToggle = document.getElementById("collatz-log");
+
+        function redraw(instant = false) {
+          const value = Math.max(1, Math.floor(Number(input.value) || 1));
+          input.value = value;
+          renderCollatz(value, instant);
+        }
+
+        button.addEventListener("click", redraw);
+        autoplayButton.addEventListener("click", () => {
+          if (collatzAutoplayRunning) {
+            stopCollatzAnimation();
+            return;
+          }
+          autoplayCollatzRange(1, 50);
+        });
+        clearButton.addEventListener("click", () => {
+          stopCollatzAnimation();
+          resetCollatzRuns();
+          renderCollatzFrame(
+            document.getElementById("collatz").getContext("2d"),
+            document.getElementById("collatz").width,
+            document.getElementById("collatz").height,
+            collatzSequence(Math.max(1, Math.floor(Number(input.value) || 1))),
+            0,
+            null
+          );
+        });
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            redraw();
+          }
+        });
+
+        logToggle.addEventListener("change", () => {
+          renderCollatzFrame(
+            document.getElementById("collatz").getContext("2d"),
+            document.getElementById("collatz").width,
+            document.getElementById("collatz").height,
+            null,
+            0,
+            null
+          );
+        });
+
+        resetCollatzRuns();
+        redraw(true);
+      }
+
+      function devilsStaircase(n, x) {
+        if (n === 0) {
+          return x;
+        }
+        if (x <= 1 / 3) {
+          return devilsStaircase(n - 1, 3 * x) / 2;
+        }
+        if (x <= 2 / 3) {
+          return 1 / 2;
+        }
+        return 1 / 2 + devilsStaircase(n - 1, 3 * x - 2) / 2;
+      }
+
+      function appendSvgNode(parent, name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+        parent.appendChild(node);
+        return node;
+      }
+
+      function cantorSegments(iteration) {
+        let segments = [[0, 1]];
+        for (let i = 0; i < iteration; i += 1) {
+          const next = [];
+          segments.forEach(([start, end]) => {
+            const third = (end - start) / 3;
+            next.push([start, start + third], [end - third, end]);
+          });
+          segments = next;
+        }
+        return segments;
+      }
+
+      function renderCantorStrip(iteration, hoverX = null) {
+        const svg = document.getElementById("cantor-strip");
+        svg.innerHTML = "";
+
+        appendSvgNode(svg, "rect", { x: 0, y: 0, width: 500, height: 74, fill: "#fff" });
+        cantorSegments(iteration).forEach(([start, end]) => {
+          appendSvgNode(svg, "rect", {
+            x: 20 + start * 460,
+            y: 22,
+            width: Math.max((end - start) * 460, 1),
+            height: 24,
+            fill: "#111"
+          });
+        });
+
+        if (hoverX !== null) {
+          appendSvgNode(svg, "line", {
+            x1: 20 + hoverX * 460,
+            y1: 10,
+            x2: 20 + hoverX * 460,
+            y2: 62,
+            stroke: "#cf3f1f",
+            "stroke-width": 1.5
+          });
+        }
+      }
+
+      function renderStaircase(iteration = 8, hoverX = null) {
+        const svg = document.getElementById("staircase");
+        const points = [];
+        const steps = 340;
+        const hoverReadout = document.getElementById("staircase-hover-readout");
+        const iterationReadout = document.getElementById("staircase-iteration-readout");
+        iterationReadout.textContent = `n=${iteration}`;
+
+        svg.innerHTML = "";
+        appendSvgNode(svg, "line", { x1: 30, y1: 12, x2: 30, y2: 256, stroke: "#8f8a7f" });
+        appendSvgNode(svg, "line", { x1: 30, y1: 256, x2: 488, y2: 256, stroke: "#8f8a7f" });
+
+        for (let i = 0; i <= steps; i += 1) {
+          const x = i / steps;
+          const y = devilsStaircase(iteration, x);
+          const px = 30 + x * 458;
+          const py = 256 - y * 226;
+          points.push(`${px},${py}`);
+        }
+
+        appendSvgNode(svg, "polyline", {
+          fill: "none",
+          stroke: "#cf3f1f",
+          "stroke-width": 2,
+          points: points.join(" ")
+        });
+
+        if (hoverX !== null) {
+          const clampedX = Math.min(Math.max(hoverX, 0), 1);
+          const hoverY = devilsStaircase(iteration, clampedX);
+          const px = 30 + clampedX * 458;
+          const py = 256 - hoverY * 226;
+          appendSvgNode(svg, "line", {
+            x1: px,
+            y1: 12,
+            x2: px,
+            y2: 256,
+            stroke: "#1d6fd6",
+            "stroke-width": 1.25
+          });
+          appendSvgNode(svg, "circle", {
+            cx: px,
+            cy: py,
+            r: 4,
+            fill: "#1d6fd6"
+          });
+          hoverReadout.textContent = `x=${clampedX.toFixed(4)}, f(x)=${hoverY.toFixed(4)}`;
+        } else {
+          hoverReadout.textContent = "x=0.0000, f(x)=0.0000";
+        }
+
+        renderCantorStrip(iteration, hoverX);
+      }
+
+      function initStaircase() {
+        const slider = document.getElementById("staircase-iteration");
+        const svg = document.getElementById("staircase");
+
+        function redraw(hoverX = null) {
+          renderStaircase(Number(slider.value), hoverX);
+        }
+
+        slider.addEventListener("input", () => redraw());
+        svg.addEventListener("mousemove", (event) => {
+          const rect = svg.getBoundingClientRect();
+          const plotLeft = rect.left + rect.width * (30 / 500);
+          const plotWidth = rect.width * (458 / 500);
+          const relativeX = (event.clientX - plotLeft) / plotWidth;
+          redraw(relativeX);
+        });
+        svg.addEventListener("mouseleave", () => redraw());
+
+        redraw();
+      }
+
+      function fftRecursive(values) {
+        const n = values.length;
+        if (n === 1) {
+          return values;
+        }
+
+        const even = fftRecursive(values.filter((_, index) => index % 2 === 0));
+        const odd = fftRecursive(values.filter((_, index) => index % 2 === 1));
+        const combined = new Array(n);
+
+        for (let m = 0; m < n / 2; m += 1) {
+          const angle = (-2 * Math.PI * m) / n;
+          const twiddle = { re: Math.cos(angle), im: Math.sin(angle) };
+          const oddValue = odd[m];
+          const t = {
+            re: twiddle.re * oddValue.re - twiddle.im * oddValue.im,
+            im: twiddle.re * oddValue.im + twiddle.im * oddValue.re
+          };
+
+          combined[m] = { re: even[m].re + t.re, im: even[m].im + t.im };
+          combined[m + n / 2] = { re: even[m].re - t.re, im: even[m].im - t.im };
+        }
+
+        return combined;
+      }
+
+      function ifftRecursive(values) {
+        const conjugated = values.map((value) => ({ re: value.re, im: -value.im }));
+        const transformed = fftRecursive(conjugated);
+        return transformed.map((value) => ({ re: value.re / values.length, im: -value.im / values.length }));
+      }
+
+      function generateDspSignal(kind, parameter, count) {
+        return Array.from({ length: count }, (_, j) => {
+          const x = j / count;
+          if (kind === "sine") {
+            return Math.sin(2 * Math.PI * parameter * x);
+          }
+          if (kind === "two-sines") {
+            return 0.65 * Math.sin(2 * Math.PI * parameter * x) + 0.35 * Math.sin(2 * Math.PI * (parameter + 3) * x);
+          }
+          if (kind === "gaussian") {
+            const spread = 0.01 + parameter * 0.003;
+            return Math.exp(-((x - 0.5) ** 2) / spread);
+          }
+          if (kind === "ramp") {
+            return ((x * parameter) % 1) * 2 - 1;
+          }
+          return Math.abs(x - 0.5) < parameter / 40 ? 1 : 0;
+        });
+      }
+
+      function drawSeriesOnCanvas(ctx, width, height, series, color, yMin, yMax) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        series.forEach((value, index) => {
+          const x = 30 + (index / Math.max(series.length - 1, 1)) * (width - 42);
+          const ratio = (value - yMin) / Math.max(yMax - yMin, 1e-6);
+          const y = height - 24 - ratio * (height - 42);
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
+      }
+
+      function renderSignalProcessing() {
+        const functionSelect = document.getElementById("dsp-function");
+        const filterSelect = document.getElementById("dsp-filter");
+        const parameterInput = document.getElementById("dsp-param");
+        const lowInput = document.getElementById("dsp-low");
+        const highInput = document.getElementById("dsp-high");
+        const parameterLabel = document.getElementById("dsp-param-label");
+        const parameterReadout = document.getElementById("dsp-param-readout");
+        const lowLabel = document.getElementById("dsp-low-label");
+        const lowReadout = document.getElementById("dsp-low-readout");
+        const highLabel = document.getElementById("dsp-high-label");
+        const highReadout = document.getElementById("dsp-high-readout");
+        const fftCanvas = document.getElementById("fft-plot");
+        const fftCtx = fftCanvas.getContext("2d");
+        const filterCanvas = document.getElementById("filter-plot");
+        const filterCtx = filterCanvas.getContext("2d");
+        const count = 128;
+
+        const parameter = Number(parameterInput.value);
+        const lowCut = Math.min(Number(lowInput.value), Number(highInput.value));
+        const highCut = Math.max(Number(lowInput.value), Number(highInput.value));
+        const functionLabels = {
+          sine: "frequency",
+          "two-sines": "base freq",
+          gaussian: "spread",
+          ramp: "slope",
+          pulse: "width"
+        };
+        parameterLabel.textContent = functionLabels[functionSelect.value];
+        parameterReadout.textContent = `${functionLabels[functionSelect.value]}=${parameter}`;
+        lowLabel.textContent = filterSelect.value === "high" ? "cutoff" : "low bin";
+        highLabel.textContent = filterSelect.value === "low" ? "cutoff" : "high bin";
+        lowReadout.textContent = String(lowCut);
+        highReadout.textContent = String(highCut);
+
+        const signal = generateDspSignal(functionSelect.value, parameter, count);
+        const transformed = fftRecursive(signal.map((value) => ({ re: value, im: 0 })));
+        const filteredSpectrum = transformed.map((value, index) => {
+          const mirroredIndex = index <= count / 2 ? index : count - index;
+          let keep = true;
+
+          if (filterSelect.value === "low") {
+            keep = mirroredIndex <= highCut;
+          } else if (filterSelect.value === "high") {
+            keep = mirroredIndex >= lowCut;
+          } else if (filterSelect.value === "band") {
+            keep = mirroredIndex >= lowCut && mirroredIndex <= highCut;
+          }
+
+          return keep ? value : { re: 0, im: 0 };
+        });
+
+        const magnitude = transformed.slice(0, count / 2).map((value) => Math.hypot(value.re, value.im));
+        const filteredSignal = ifftRecursive(filteredSpectrum).map((value) => value.re);
+
+        fftCtx.clearRect(0, 0, fftCanvas.width, fftCanvas.height);
+        drawAxes(fftCtx, fftCanvas.width, fftCanvas.height);
+        drawSeriesOnCanvas(fftCtx, fftCanvas.width, fftCanvas.height, signal, "#1d6fd6", -1.2, 1.2);
+        const maxMag = Math.max(...magnitude, 1);
+        drawSeriesOnCanvas(
+          fftCtx,
+          fftCanvas.width,
+          fftCanvas.height,
+          magnitude.map((value) => (value / maxMag) * 2 - 1),
+          "#cf3f1f",
+          -1.2,
+          1.2
+        );
+        fftCtx.fillStyle = "#121212";
+        fftCtx.font = "12px 'Courier New', monospace";
+        fftCtx.fillText("blue=input signal", 36, 18);
+        fftCtx.fillText("red=fft magnitude", 36, 34);
+
+        filterCtx.clearRect(0, 0, filterCanvas.width, filterCanvas.height);
+        drawAxes(filterCtx, filterCanvas.width, filterCanvas.height);
+        drawSeriesOnCanvas(filterCtx, filterCanvas.width, filterCanvas.height, signal, "rgba(18,18,18,0.35)", -1.2, 1.2);
+        drawSeriesOnCanvas(filterCtx, filterCanvas.width, filterCanvas.height, filteredSignal, "#1f8a55", -1.2, 1.2);
+        filterCtx.fillStyle = "#121212";
+        filterCtx.font = "12px 'Courier New', monospace";
+        filterCtx.fillText("gray=original", 36, 18);
+        filterCtx.fillText("green=filtered output", 36, 34);
+      }
+
+      function initSignalProcessing() {
+        [
+          document.getElementById("dsp-function"),
+          document.getElementById("dsp-filter"),
+          document.getElementById("dsp-param"),
+          document.getElementById("dsp-low"),
+          document.getElementById("dsp-high")
+        ].forEach((control) => {
+          control.addEventListener("input", renderSignalProcessing);
+          control.addEventListener("change", renderSignalProcessing);
+        });
+
+        renderSignalProcessing();
+      }
+
+      function makeLifeBoard(cols, rows) {
+        const board = [];
+        for (let y = 0; y < rows; y += 1) {
+          const row = [];
+          for (let x = 0; x < cols; x += 1) {
+            row.push(Math.random() < 0.18 ? 1 : 0);
+          }
+          board.push(row);
+        }
+        return board;
+      }
+
+      function countNeighbors(board, x, y) {
+        let count = 0;
+        const rows = board.length;
+        const cols = board[0].length;
+
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            if (dx === 0 && dy === 0) {
+              continue;
+            }
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+              count += board[ny][nx];
+            }
+          }
+        }
+
+        return count;
+      }
+
+      function nextLife(board) {
+        return board.map((row, y) =>
+          row.map((cell, x) => {
+            const neighbors = countNeighbors(board, x, y);
+            if (cell && (neighbors === 2 || neighbors === 3)) {
+              return 1;
+            }
+            if (!cell && neighbors === 3) {
+              return 1;
+            }
+            return 0;
+          })
+        );
+      }
+
+      function runLife() {
+        const canvas = document.getElementById("life");
+        const ctx = canvas.getContext("2d");
+        const playButton = document.getElementById("life-play");
+        const stepButton = document.getElementById("life-step");
+        const randomButton = document.getElementById("life-random");
+        const clearButton = document.getElementById("life-clear");
+        const speedInput = document.getElementById("life-speed");
+        const readout = document.getElementById("life-readout");
+        const cols = 50;
+        const rows = 28;
+        const cellSize = 10;
+        let board = makeLifeBoard(cols, rows);
+        let generation = 0;
+        let running = false;
+        let timer = null;
+
+        function currentLifeDelay() {
+          return 440 - Number(speedInput.value);
+        }
+
+        function liveCount() {
+          return board.flat().reduce((sum, value) => sum + value, 0);
+        }
+
+        function updateReadout() {
+          readout.textContent = `gen=${generation} live=${liveCount()}`;
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          for (let y = 0; y < rows; y += 1) {
+            for (let x = 0; x < cols; x += 1) {
+              if (!board[y][x]) {
+                continue;
+              }
+              ctx.fillStyle = (x + y) % 2 === 0 ? "#1d6fd6" : "#121212";
+              ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+            }
+          }
+          updateReadout();
+        }
+
+        function stop() {
+          running = false;
+          if (timer) {
+            window.clearTimeout(timer);
+            timer = null;
+          }
+          playButton.textContent = "play";
+          playButton.classList.remove("is-running");
+        }
+
+        function stepLife() {
+          board = nextLife(board);
+          generation += 1;
+          draw();
+        }
+
+        function tick() {
+          if (!running) {
+            return;
+          }
+          stepLife();
+          timer = window.setTimeout(tick, currentLifeDelay());
+        }
+
+        function start() {
+          if (running) {
+            return;
+          }
+          running = true;
+          playButton.textContent = "pause";
+          playButton.classList.add("is-running");
+          tick();
+        }
+
+        draw();
+
+        playButton.addEventListener("click", () => {
+          if (running) {
+            stop();
+            return;
+          }
+          start();
+        });
+
+        stepButton.addEventListener("click", () => {
+          stop();
+          stepLife();
+        });
+
+        randomButton.addEventListener("click", () => {
+          stop();
+          board = makeLifeBoard(cols, rows);
+          generation = 0;
+          draw();
+        });
+
+        clearButton.addEventListener("click", () => {
+          stop();
+          board = makeLifeBoard(cols, rows).map((row) => row.map(() => 0));
+          generation = 0;
+          draw();
+        });
+
+        speedInput.addEventListener("input", () => {
+          if (running) {
+            if (timer) {
+              window.clearTimeout(timer);
+            }
+            timer = window.setTimeout(tick, currentLifeDelay());
+          }
+        });
+
+        canvas.addEventListener("click", (event) => {
+          const rect = canvas.getBoundingClientRect();
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+          const x = Math.floor(((event.clientX - rect.left) * scaleX) / cellSize);
+          const y = Math.floor(((event.clientY - rect.top) * scaleY) / cellSize);
+
+          if (x < 0 || x >= cols || y < 0 || y >= rows) {
+            return;
+          }
+
+          board[y][x] = board[y][x] ? 0 : 1;
+          draw();
+        });
+
+        start();
+      }
+
+      function runTuringMachine() {
+        const tapeRow = document.getElementById("tape-row");
+        const readout = document.getElementById("machine-readout");
+        const playButton = document.getElementById("tm-play");
+        const stepButton = document.getElementById("tm-step");
+        const resetButton = document.getElementById("tm-reset");
+        const cells = new Array(9).fill(0);
+        let headPos = 4;
+        let headState = "A";
+        let steps = 0;
+        let running = true;
+        let timer = null;
+
+        function resetMachine() {
+          headPos = 4;
+          headState = "A";
+          steps = 0;
+          cells.fill(0);
+        }
+
+        function ensureRoom() {
+          if (headPos <= 1) {
+            cells.unshift(0);
+            cells.pop();
+            headPos += 1;
+          }
+          if (headPos >= cells.length - 2) {
+            cells.push(0);
+            cells.shift();
+            headPos -= 1;
+          }
+        }
+
+        function step() {
+          const value = cells[headPos];
+
+          if (headState === "A" && value === 0) {
+            cells[headPos] = 1;
+            headPos -= 1;
+            headState = "B";
+          } else if (headState === "A" && value === 1) {
+            cells[headPos] = 1;
+            headPos += 1;
+            headState = "A";
+          } else if (headState === "B" && value === 0) {
+            cells[headPos] = 1;
+            headPos += 1;
+            headState = "A";
+          } else if (headState === "B" && value === 1) {
+            cells[headPos] = 1;
+            headPos += 1;
+            headState = "HALT";
+          }
+
+          steps += 1;
+          ensureRoom();
+        }
+
+        function render() {
+          tapeRow.innerHTML = "";
+          cells.forEach((value, index) => {
+            const cell = document.createElement("div");
+            cell.className = "cell" + (index === headPos ? " head" : "");
+            cell.textContent = index === headPos ? headState : value;
+            tapeRow.appendChild(cell);
+          });
+          readout.textContent = `state = ${headState}   step = ${steps}`;
+        }
+
+        function stop() {
+          running = false;
+          if (timer) {
+            window.clearTimeout(timer);
+            timer = null;
+          }
+          playButton.textContent = "play";
+          playButton.classList.remove("is-running");
+        }
+
+        function tick() {
+          if (!running) {
+            return;
+          }
+          if (headState === "HALT") {
+            resetMachine();
+          } else {
+            step();
+          }
+          render();
+          timer = window.setTimeout(tick, 650);
+        }
+
+        function start() {
+          if (running) {
+            return;
+          }
+          running = true;
+          playButton.textContent = "pause";
+          playButton.classList.add("is-running");
+          tick();
+        }
+
+        render();
+        playButton.classList.add("is-running");
+
+        playButton.addEventListener("click", () => {
+          if (running) {
+            stop();
+            return;
+          }
+          start();
+        });
+
+        stepButton.addEventListener("click", () => {
+          stop();
+          if (headState === "HALT") {
+            resetMachine();
+          } else {
+            step();
+          }
+          render();
+        });
+
+        resetButton.addEventListener("click", () => {
+          stop();
+          resetMachine();
+          render();
+        });
+
+        tick();
+      }
+
+      initCollatz();
+      initStaircase();
+      runLife();
+      runTuringMachine();
+      initSignalProcessing();
+    </script>
   </body>
 </html>
