@@ -519,7 +519,9 @@
           if (index < helloMessage.length) {
             let delay = 22;
 
-            if (index === firstPauseIndex || index === secondPauseIndex) {
+            if (index === firstPauseIndex) {
+              delay = 520;
+            } else if (index === secondPauseIndex) {
               delay = 980;
             }
 
