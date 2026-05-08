@@ -2,12 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>pigeons!!!!</title>
     <script src="../pigeon/PigeonConfig.js"></script>
     <script src="../pigeon/MouseTracker.js"></script>
     <script src="../pigeon/PNGRenderer.js"></script>
     <script src="../pigeon/Pigeon.js"></script>
     <style>
+      body {
+        margin: 0;
+        padding: 20px 16px 40px;
+      }
+
       .surprise-pigeon {
         position: fixed;
         left: 0;
@@ -40,6 +46,25 @@
 
       .download-note {
         margin-top: 8px;
+      }
+
+      @media (max-width: 700px) {
+        body {
+          padding: 16px 12px 28px;
+        }
+
+        .surprise-pigeon {
+          width: min(140px, 30vw);
+        }
+
+        .download-section {
+          margin-top: 48vh;
+          margin-bottom: 72px;
+        }
+
+        .virus-download {
+          padding: 14px 20px;
+        }
       }
     </style>
   </head>

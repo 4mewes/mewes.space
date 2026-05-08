@@ -2,11 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>TV</title>
     <style>
+      body {
+        margin: 0;
+        padding: 16px;
+      }
+
       .tv {
-        width: min(1100px, 100%);
+        width: min(1100px, calc(100vw - 32px));
         margin: 0 auto;
       }
 
@@ -89,29 +95,60 @@
 
       @media (max-width: 900px) {
         iframe {
-          height: 70vh;
+          height: min(62vh, 440px);
           min-height: 0;
         }
 
+        .controls {
+          position: static;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 10px;
+          pointer-events: auto;
+        }
+
+        .controls button {
+          position: static;
+          transform: none;
+        }
+
         .controls button img {
-          width: 64px;
+          width: 56px;
         }
 
         #previous {
-          left: -72px;
+          left: auto;
         }
 
         #next {
-          right: -72px;
+          right: auto;
+        }
+
+        #watch img {
+          width: 132px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        body {
+          padding: 12px;
+        }
+
+        .tv {
+          width: 100%;
+        }
+
+        iframe {
+          height: min(56vh, 360px);
         }
       }
     </style>
   </head>
   <body>
-    <p><a href="../index.html">Home</a></p>
-    <p>like doomscrolling but curated by me</p>
-
     <div class="tv">
+      <p><a href="../index.html">Home</a></p>
+      <p>like doomscrolling but curated by me</p>
       <div class="player-frame">
         <button id="watch" type="button" aria-label="Watch">
           <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">

@@ -28,9 +28,17 @@
       }
 
       .intro {
-        display: grid;
-        gap: 12px;
+        display: block;
         margin-bottom: 28px;
+        width: min(372px, 100%);
+        margin-inline: auto;
+        text-align: center;
+        font-size: clamp(0.9rem, 1.8vw, 1rem);
+        line-height: 1.25;
+      }
+
+      .intro-char-hidden {
+        opacity: 0.15;
       }
 
       h2,
@@ -176,6 +184,13 @@
         font-size: 0.9rem;
       }
 
+      .staircase-controls button {
+        font: inherit;
+        padding: 2px 8px;
+        border: 1px solid #111;
+        background: #fff;
+      }
+
       .staircase-pair {
         display: grid;
         gap: 8px;
@@ -258,6 +273,18 @@
         font-size: 0.85rem;
       }
 
+      .rainbow-word {
+        font: inherit;
+        font-weight: 600;
+      }
+
+      .rainbow-word span:nth-child(1) { color: #d84b57; }
+      .rainbow-word span:nth-child(2) { color: #d98f2b; }
+      .rainbow-word span:nth-child(3) { color: #c7a62a; }
+      .rainbow-word span:nth-child(4) { color: #4d8a52; }
+      .rainbow-word span:nth-child(5) { color: #547fbb; }
+      .rainbow-word span:nth-child(6) { color: #8a56a3; }
+
       .dsp-pair {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -320,13 +347,59 @@
       }
 
       @media (max-width: 880px) {
+        main {
+          width: min(760px, calc(100vw - 24px));
+          margin: 52px auto 40px;
+        }
+
+        .home-link {
+          top: 10px;
+          left: 10px;
+        }
+
         .frame,
         .tape {
           min-height: 220px;
         }
 
+        .collatz-controls,
+        .staircase-controls,
+        .life-controls,
+        .tm-controls,
+        .dsp-row {
+          align-items: flex-start;
+        }
+
+        .collatz-log-toggle {
+          margin-left: 0;
+        }
+
         .dsp-pair {
           grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        main {
+          width: calc(100vw - 20px);
+          margin-top: 46px;
+        }
+
+        .card-copy {
+          min-height: 0;
+        }
+
+        .frame,
+        .tape {
+          min-height: 190px;
+        }
+
+        .collatz-controls input,
+        .staircase-controls input,
+        .life-controls input,
+        .dsp-controls input[type="range"] {
+          width: 100%;
+          max-width: 220px;
         }
       }
     </style>
@@ -334,9 +407,7 @@
   <body>
     <p class="home-link"><a href="../index.html">Home</a></p>
     <main>
-      <section class="intro">
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~math is universal~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      </section>
+      <section class="intro" id="maths-intro">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~math is universal~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</section>
 
       <section class="grid">
         <article class="card">
@@ -348,6 +419,7 @@
             <img src="../media/maths/collatz-def/8b55c72bf3bdd32024ac1831f6cc88f6d5510104.svg" alt="Definition of the Collatz sequence">
           </div>
           <p class="card-copy">This is formally unproven, however it was already shown to be true for all positive integers up until 2.36×10^21! read more here: <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">wikipedia.org/wiki/Collatz_conjecture</a></p>
+          <p class="card-copy">When the sequence stops is seemingly <span class="rainbow-word"><span>R</span><span>a</span><span>n</span><span>d</span><span>o</span><span>m</span></span>, there is even the possibility of it never stopping if we just find the right starting number, reminds me of the Halting Problem ..</p>
           <div class="collatz-controls">
             <label for="collatz-input">start value</label>
             <input id="collatz-input" type="number" min="1" step="1" value="27">
@@ -366,7 +438,8 @@
           <div class="card-head">
             <h2>Game Of Life</h2>
           </div>
-          <p class="card-copy">Conway's Game of Life is a cellular automaton where simple local rules create shifting patterns, oscillators, and moving structures. read more here: <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life</a></p>
+          <p class="card-copy">cellular automaton where simple local rules create shifting patterns, oscillators, and moving structures. read more here: <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life</a></p>
+          <p class="card-copy">organic looking (almost comes alive) which is fascinating given its simple rules.</p>
           <div class="life-controls">
             <button id="life-play" type="button">play</button>
             <button id="life-step" type="button">step</button>
@@ -385,12 +458,13 @@
           <div class="card-head">
             <h2>Devil's Staircase</h2>
           </div>
-          <p class="card-copy">A Cantor-set staircase: flat, then climbing, then flat again, forever. read more here: <a href="https://en.wikipedia.org/wiki/Cantor_function">wikipedia.org/wiki/Cantor_function</a></p>
+          <p class="card-copy">The cantor set has a infinite number of points and length (measure) of zero at the same time, there is no interval, gaps are everywhere. Zoom in to see for yourself</p>
           <div class="staircase-controls">
             <label for="staircase-iteration">iteration</label>
             <input id="staircase-iteration" type="range" min="0" max="18" step="1" value="8">
             <span class="staircase-readout" id="staircase-iteration-readout">n=8</span>
             <span class="staircase-readout" id="staircase-hover-readout">x=0.0000, f(x)=0.0000</span>
+            <button id="staircase-zoom-out" type="button">reset zoom</button>
           </div>
           <div class="staircase-pair">
             <div class="frame cantor-strip">
@@ -516,7 +590,55 @@
       const collatzPalette = ["#1d6fd6", "#cf3f1f", "#1f8a55", "#5f43b2", "#c28600", "#008b8b", "#bb2d73", "#444"];
 
       function collatzScaleValue(value, useLogScale) {
-        return useLogScale ? Math.log10(value + 1) : value;
+        return useLogScale ? Math.log10(Math.max(value, 1)) : value;
+      }
+
+      function niceLinearStep(roughStep) {
+        const exponent = 10 ** Math.floor(Math.log10(Math.max(roughStep, 1)));
+        const fraction = roughStep / exponent;
+
+        if (fraction <= 1) {
+          return exponent;
+        }
+        if (fraction <= 2) {
+          return 2 * exponent;
+        }
+        if (fraction <= 5) {
+          return 5 * exponent;
+        }
+        return 10 * exponent;
+      }
+
+      function collatzAxisSpec(maxRawValue, useLogScale, tickCount = 5) {
+        if (useLogScale) {
+          const safeMax = Math.max(maxRawValue, 1);
+          const maxExponent = Math.max(0, Math.ceil(Math.log10(safeMax)));
+          const ticks = [];
+
+          for (let exponent = 0; exponent <= maxExponent; exponent += 1) {
+            ticks.push(10 ** exponent);
+          }
+
+          if (ticks[ticks.length - 1] < safeMax) {
+            ticks.push(10 ** (maxExponent + 1));
+          }
+
+          return {
+            ticks,
+            axisMaxRaw: ticks[ticks.length - 1]
+          };
+        }
+
+        const safeMax = Math.max(maxRawValue, 1);
+        const step = niceLinearStep(safeMax / Math.max(tickCount - 1, 1));
+        const axisMaxRaw = Math.max(step, Math.ceil(safeMax / step) * step);
+        const ticks = [];
+
+        for (let value = 0; value <= axisMaxRaw; value += step) {
+          ticks.push(value);
+        }
+
+        return { ticks, axisMaxRaw };
       }
 
       function renderCollatzLegend() {
@@ -578,7 +700,8 @@
           visibleSequences.push(activeSequence.slice(0, Math.max(visibleCount, 1)));
         }
         updateCollatzDomain(visibleSequences);
-        const maxValue = collatzScaleValue(collatzDomain.maxValue, useLogScale);
+        const { ticks, axisMaxRaw } = collatzAxisSpec(collatzDomain.maxValue, useLogScale);
+        const maxValue = collatzScaleValue(axisMaxRaw, useLogScale);
         const xSpan = Math.max(collatzDomain.maxLength - 1, 1);
 
         ctx.clearRect(0, 0, width, height);
@@ -586,15 +709,10 @@
 
         ctx.fillStyle = "#121212";
         ctx.font = "12px 'Courier New', monospace";
-        for (let i = 0; i <= 4; i += 1) {
-          const ratio = i / 4;
-          const y = height - 24 - ratio * (height - 42);
-          const scaledValue = ratio * maxValue;
-          const label = useLogScale
-            ? Math.round((10 ** scaledValue) - 1)
-            : Math.round(scaledValue);
-          ctx.fillText(String(label), 4, y + 4);
-        }
+        ticks.forEach((tickValue) => {
+          const y = height - 24 - (collatzScaleValue(tickValue, useLogScale) / Math.max(maxValue, 1e-6)) * (height - 42);
+          ctx.fillText(String(tickValue), 4, y + 4);
+        });
 
         collatzRuns.forEach((run) => {
           ctx.strokeStyle = run.color;
@@ -657,7 +775,7 @@
         }
       }
 
-      function renderCollatz(start = 27, instant = false) {
+      function renderCollatz(start = 27, instant = false, onComplete = null) {
         const canvas = document.getElementById("collatz");
         const ctx = canvas.getContext("2d");
         const width = canvas.width;
@@ -676,6 +794,9 @@
           });
           renderCollatzLegend();
           renderCollatzFrame(ctx, width, height, null, 0, start);
+          if (onComplete) {
+            onComplete();
+          }
           return;
         }
 
@@ -689,6 +810,9 @@
             renderCollatzLegend();
             renderCollatzFrame(ctx, width, height, null, 0, start);
             collatzTimer = null;
+            if (onComplete) {
+              onComplete();
+            }
             return;
           }
 
@@ -722,11 +846,8 @@
           }
 
           input.value = current;
-          renderCollatz(current);
-
-          const sequenceLength = collatzSequence(current).length;
+          renderCollatz(current, false, runNext);
           current += 1;
-          collatzSequenceTimer = window.setTimeout(runNext, Math.max(sequenceLength * 45 + 180, 260));
         }
 
         runNext();
@@ -821,14 +942,22 @@
 
       function renderCantorStrip(iteration, hoverX = null) {
         const svg = document.getElementById("cantor-strip");
+        const { xMin, xMax } = staircaseView;
+        const span = xMax - xMin;
         svg.innerHTML = "";
 
         appendSvgNode(svg, "rect", { x: 0, y: 0, width: 500, height: 74, fill: "#fff" });
         cantorSegments(iteration).forEach(([start, end]) => {
+          const clippedStart = Math.max(start, xMin);
+          const clippedEnd = Math.min(end, xMax);
+          if (clippedEnd <= clippedStart) {
+            return;
+          }
+
           appendSvgNode(svg, "rect", {
-            x: 20 + start * 460,
+            x: 20 + ((clippedStart - xMin) / span) * 460,
             y: 22,
-            width: Math.max((end - start) * 460, 1),
+            width: Math.max(((clippedEnd - clippedStart) / span) * 460, 1),
             height: 24,
             fill: "#111"
           });
@@ -836,9 +965,9 @@
 
         if (hoverX !== null) {
           appendSvgNode(svg, "line", {
-            x1: 20 + hoverX * 460,
+            x1: 20 + ((hoverX - xMin) / span) * 460,
             y1: 10,
-            x2: 20 + hoverX * 460,
+            x2: 20 + ((hoverX - xMin) / span) * 460,
             y2: 62,
             stroke: "#cf3f1f",
             "stroke-width": 1.5
@@ -846,23 +975,42 @@
         }
       }
 
+      const staircaseView = { xMin: 0, xMax: 1 };
+
       function renderStaircase(iteration = 8, hoverX = null) {
         const svg = document.getElementById("staircase");
         const points = [];
         const steps = 340;
         const hoverReadout = document.getElementById("staircase-hover-readout");
         const iterationReadout = document.getElementById("staircase-iteration-readout");
+        const zoomButton = document.getElementById("staircase-zoom-out");
+        const { xMin, xMax } = staircaseView;
+        const xSpan = xMax - xMin;
+        const sampledValues = [];
         iterationReadout.textContent = `n=${iteration}`;
+        zoomButton.textContent = xSpan < 0.999999 ? `reset zoom (${xMin.toFixed(3)}-${xMax.toFixed(3)})` : "reset zoom";
+
+        for (let i = 0; i <= steps; i += 1) {
+          const x = xMin + (i / steps) * xSpan;
+          sampledValues.push(devilsStaircase(iteration, x));
+        }
+
+        const yMin = Math.min(...sampledValues);
+        const yMax = Math.max(...sampledValues);
+        const yPadding = Math.max((yMax - yMin) * 0.08, 0.0025);
+        const viewYMin = Math.max(0, yMin - yPadding);
+        const viewYMax = Math.min(1, yMax + yPadding);
+        const ySpan = Math.max(viewYMax - viewYMin, 1e-6);
 
         svg.innerHTML = "";
         appendSvgNode(svg, "line", { x1: 30, y1: 12, x2: 30, y2: 256, stroke: "#8f8a7f" });
         appendSvgNode(svg, "line", { x1: 30, y1: 256, x2: 488, y2: 256, stroke: "#8f8a7f" });
 
         for (let i = 0; i <= steps; i += 1) {
-          const x = i / steps;
-          const y = devilsStaircase(iteration, x);
-          const px = 30 + x * 458;
-          const py = 256 - y * 226;
+          const x = xMin + (i / steps) * xSpan;
+          const y = sampledValues[i];
+          const px = 30 + (i / steps) * 458;
+          const py = 256 - ((y - viewYMin) / ySpan) * 226;
           points.push(`${px},${py}`);
         }
 
@@ -874,10 +1022,10 @@
         });
 
         if (hoverX !== null) {
-          const clampedX = Math.min(Math.max(hoverX, 0), 1);
+          const clampedX = Math.min(Math.max(hoverX, xMin), xMax);
           const hoverY = devilsStaircase(iteration, clampedX);
-          const px = 30 + clampedX * 458;
-          const py = 256 - hoverY * 226;
+          const px = 30 + ((clampedX - xMin) / xSpan) * 458;
+          const py = 256 - ((hoverY - viewYMin) / ySpan) * 226;
           appendSvgNode(svg, "line", {
             x1: px,
             y1: 12,
@@ -892,9 +1040,9 @@
             r: 4,
             fill: "#1d6fd6"
           });
-          hoverReadout.textContent = `x=${clampedX.toFixed(4)}, f(x)=${hoverY.toFixed(4)}`;
+          hoverReadout.textContent = `x=${clampedX.toFixed(4)}, f(x)=${hoverY.toFixed(4)}, zoom=${xSpan.toFixed(4)}`;
         } else {
-          hoverReadout.textContent = "x=0.0000, f(x)=0.0000";
+          hoverReadout.textContent = `x=${xMin.toFixed(4)}, f(x)=${devilsStaircase(iteration, xMin).toFixed(4)}, zoom=${xSpan.toFixed(4)}`;
         }
 
         renderCantorStrip(iteration, hoverX);
@@ -903,20 +1051,41 @@
       function initStaircase() {
         const slider = document.getElementById("staircase-iteration");
         const svg = document.getElementById("staircase");
+        const zoomButton = document.getElementById("staircase-zoom-out");
+        let hoverX = null;
 
-        function redraw(hoverX = null) {
+        function redraw(nextHoverX = hoverX) {
+          hoverX = nextHoverX;
           renderStaircase(Number(slider.value), hoverX);
+        }
+
+        function eventToX(event) {
+          const rect = svg.getBoundingClientRect();
+          const plotLeft = rect.left + rect.width * (30 / 500);
+          const plotWidth = rect.width * (458 / 500);
+          const relativeX = Math.min(Math.max((event.clientX - plotLeft) / plotWidth, 0), 1);
+          return staircaseView.xMin + relativeX * (staircaseView.xMax - staircaseView.xMin);
         }
 
         slider.addEventListener("input", () => redraw());
         svg.addEventListener("mousemove", (event) => {
-          const rect = svg.getBoundingClientRect();
-          const plotLeft = rect.left + rect.width * (30 / 500);
-          const plotWidth = rect.width * (458 / 500);
-          const relativeX = (event.clientX - plotLeft) / plotWidth;
-          redraw(relativeX);
+          redraw(eventToX(event));
+        });
+        svg.addEventListener("click", (event) => {
+          const centerX = eventToX(event);
+          const currentSpan = staircaseView.xMax - staircaseView.xMin;
+          const nextSpan = Math.max(currentSpan / 3, 0.0002);
+          staircaseView.xMin = Math.max(0, centerX - nextSpan / 2);
+          staircaseView.xMax = Math.min(1, staircaseView.xMin + nextSpan);
+          staircaseView.xMin = Math.max(0, staircaseView.xMax - nextSpan);
+          redraw(centerX);
         });
         svg.addEventListener("mouseleave", () => redraw());
+        zoomButton.addEventListener("click", () => {
+          staircaseView.xMin = 0;
+          staircaseView.xMax = 1;
+          redraw();
+        });
 
         redraw();
       }
@@ -1398,6 +1567,41 @@
         tick();
       }
 
+      function initIntroAnimation() {
+        const intro = document.getElementById("maths-intro");
+        const baseText = intro.textContent;
+        const chars = [...baseText];
+        intro.setAttribute("aria-label", baseText);
+        intro.innerHTML = "";
+
+        const spans = chars.map((char) => {
+          const span = document.createElement("span");
+          span.textContent = char;
+          intro.appendChild(span);
+          return span;
+        });
+
+        const tildeIndexes = chars
+          .map((char, index) => (char === "~" ? index : -1))
+          .filter((index) => index !== -1);
+
+        function flickerTilde() {
+          const flickerCount = 1 + Math.floor(Math.random() * 2);
+          const shuffled = [...tildeIndexes].sort(() => Math.random() - 0.5).slice(0, flickerCount);
+
+          shuffled.forEach((index) => {
+            spans[index].classList.add("intro-char-hidden");
+            const duration = 420 + Math.random() * 700;
+            window.setTimeout(() => {
+              spans[index].classList.remove("intro-char-hidden");
+            }, duration);
+          });
+        }
+
+        window.setInterval(flickerTilde, 1050);
+      }
+
+      initIntroAnimation();
       initCollatz();
       initStaircase();
       runLife();

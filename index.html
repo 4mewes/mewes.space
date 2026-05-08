@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My Website</title>
     <style>
       body {
@@ -9,6 +10,7 @@
         min-height: 100vh;
         margin: 0;
         place-items: center;
+        padding: 24px;
       }
 
       body.guestbook-open {
@@ -22,15 +24,20 @@
         border-radius: 50%;
       }
 
-      a {
+      nav a {
         position: absolute;
         color: #111;
         text-decoration: none;
         transform: translate(-50%, -50%);
       }
 
-      a > span {
+      nav a > span {
         display: inline-block;
+      }
+
+      nav a:focus-visible {
+        outline: 1px solid #111;
+        outline-offset: 4px;
       }
 
       .wobble:hover > span {
@@ -312,6 +319,7 @@
         padding: 6px 6px 0;
         cursor: move;
         user-select: none;
+        touch-action: none;
       }
 
       .guestbook-popup-close {
@@ -356,7 +364,7 @@
         position: fixed;
         z-index: 18;
         display: none;
-        max-width: 260px;
+        max-width: min(260px, calc(100vw - 32px));
         padding: 10px 12px;
         background: #fff;
         border: 2px solid #111;
@@ -406,6 +414,39 @@
         50%,
         100% {
           opacity: 0;
+        }
+      }
+
+      @media (max-width: 700px) {
+        body {
+          padding: 18px 14px;
+          align-content: center;
+        }
+
+        nav {
+          width: min(434px, calc(100vw - 14px));
+          height: min(434px, calc(100vw - 14px));
+        }
+
+        nav a {
+          font-size: clamp(0.96rem, 3.5vw, 1.15rem);
+          line-height: 1.1;
+          text-align: center;
+          white-space: nowrap;
+        }
+
+        nav a > span {
+          padding: 6px 8px;
+        }
+
+        .guestbook-popup {
+          width: calc(100vw - 20px);
+          height: min(76vh, 620px);
+          max-width: 420px;
+        }
+
+        .hello-bubble {
+          max-width: calc(100vw - 24px);
         }
       }
     </style>
@@ -479,6 +520,28 @@
       let dragState = null;
       let helloTypeTimer = null;
 
+      function currentNavMetrics() {
+        const navSize = nav.clientWidth;
+        const mobile = window.innerWidth <= 700;
+        return {
+          center: navSize / 2,
+          radius: navSize * (mobile ? 0.4 : 0.42)
+        };
+      }
+
+      function guestbookUsesMobileLayout() {
+        return window.innerWidth <= 700;
+      }
+
+      function layoutNav() {
+        const { center, radius } = currentNavMetrics();
+        [...nav.querySelectorAll("a")].forEach((linkNode, index) => {
+          const angle = (index / links.length) * Math.PI * 2 - Math.PI / 2;
+          linkNode.style.left = `${center + Math.cos(angle) * radius}px`;
+          linkNode.style.top = `${center + Math.sin(angle) * radius}px`;
+        });
+      }
+
       function stopHelloTyping() {
         if (helloTypeTimer) {
           window.clearTimeout(helloTypeTimer);
@@ -520,9 +583,9 @@
             let delay = 22;
 
             if (index === firstPauseIndex) {
-              delay = 520;
+              delay = 300;
             } else if (index === secondPauseIndex) {
-              delay = 980;
+              delay = 700;
             }
 
             index += 1;
@@ -543,6 +606,10 @@
       }
 
       function clampGuestbookPosition() {
+        if (guestbookUsesMobileLayout()) {
+          return;
+        }
+
         const rect = guestbookPopup.getBoundingClientRect();
         const halfWidth = rect.width / 2;
         const halfHeight = rect.height / 2;
@@ -551,6 +618,12 @@
       }
 
       function renderGuestbookPosition() {
+        if (guestbookUsesMobileLayout()) {
+          guestbookPopup.style.left = "50%";
+          guestbookPopup.style.top = "50%";
+          return;
+        }
+
         guestbookPopup.style.left = `${guestbookPosition.x}px`;
         guestbookPopup.style.top = `${guestbookPosition.y}px`;
       }
@@ -578,14 +651,11 @@
       }
 
       links.forEach((link, index) => {
-        const angle = (index / links.length) * Math.PI * 2 - Math.PI / 2;
         const a = document.createElement("a");
         const label = document.createElement("span");
 
         a.href = link.href;
         a.className = animations[index % animations.length];
-        a.style.left = `${center + Math.cos(angle) * radius}px`;
-        a.style.top = `${center + Math.sin(angle) * radius}px`;
         label.textContent = link.text;
         a.appendChild(label);
 
@@ -604,9 +674,11 @@
         nav.appendChild(a);
       });
 
+      layoutNav();
+
       guestbookClose.addEventListener("click", closeGuestbook);
       guestbookBackdrop.addEventListener("click", closeGuestbook);
-      document.addEventListener("mousedown", (event) => {
+      document.addEventListener("pointerdown", (event) => {
         if (!helloBubble.classList.contains("is-open")) {
           return;
         }
@@ -618,19 +690,21 @@
         closeHelloBubble();
       });
 
-      guestbookBar.addEventListener("mousedown", (event) => {
-        if (event.target.closest("button")) {
+      guestbookBar.addEventListener("pointerdown", (event) => {
+        if (event.target.closest("button") || guestbookUsesMobileLayout()) {
           return;
         }
 
         dragState = {
+          pointerId: event.pointerId,
           offsetX: event.clientX - guestbookPosition.x,
           offsetY: event.clientY - guestbookPosition.y
         };
+        guestbookBar.setPointerCapture(event.pointerId);
       });
 
-      window.addEventListener("mousemove", (event) => {
-        if (!dragState) {
+      window.addEventListener("pointermove", (event) => {
+        if (!dragState || event.pointerId !== dragState.pointerId) {
           return;
         }
 
@@ -640,11 +714,16 @@
         renderGuestbookPosition();
       });
 
-      window.addEventListener("mouseup", () => {
+      window.addEventListener("pointerup", () => {
+        dragState = null;
+      });
+
+      window.addEventListener("pointercancel", () => {
         dragState = null;
       });
 
       window.addEventListener("resize", () => {
+        layoutNav();
         clampGuestbookPosition();
         renderGuestbookPosition();
       });
