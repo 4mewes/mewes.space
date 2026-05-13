@@ -28,9 +28,11 @@
 
       .slideshow {
         position: relative;
-        width: min(800px, 100%);
-        margin: 0 auto;
-        aspect-ratio: 4 / 3;
+        width: min(99vw, 1600px);
+        height: min(90vh, 1200px);
+        left: 50%;
+        margin: 0;
+        transform: translateX(-50%);
       }
 
       .slideshow img {
@@ -41,10 +43,12 @@
         height: 100%;
         object-fit: contain;
         opacity: 0;
+        z-index: 0;
       }
 
       .slideshow img.is-active {
         opacity: 1;
+        z-index: 1;
       }
 
       .distance-message {
@@ -76,7 +80,7 @@
 
         .slideshow {
           width: calc(100vw - 8px);
-          aspect-ratio: 1 / 1;
+          height: min(90vh, 1200px);
         }
 
         .distance-message {
@@ -107,18 +111,17 @@
 
     <script>
       const images = [
-        "../media/distance/IMG_9300.webp",
-        "../media/distance/IMG_9301.webp",
-        "../media/distance/IMG_9302.webp",
-        "../media/distance/IMG_9303.webp",
-        "../media/distance/IMG_9304.webp",
-        "../media/distance/IMG_9305.webp",
-        "../media/distance/IMG_9307.webp",
-        "../media/distance/IMG_9308.webp",
-        "../media/distance/IMG_9309.webp",
-        "../media/distance/IMG_9320.webp",
-        "../media/distance/IMG_9311.webp",
-        "../media/distance/IMG_9313.webp"
+        "../media/distance-small/IMG_9300.webp",
+        "../media/distance-small/IMG_9301.webp",
+        "../media/distance-small/IMG_9303.webp",
+        "../media/distance-small/IMG_9304.webp",
+        "../media/distance-small/IMG_9305.webp",
+        "../media/distance-small/IMG_9307.webp",
+        "../media/distance-small/IMG_9308.webp",
+        "../media/distance-small/IMG_9309.webp",
+        "../media/distance-small/IMG_9320.webp",
+        "../media/distance-small/IMG_9311.webp",
+        "../media/distance-small/IMG_9313.webp"
       ];
 
       const slideshow = document.getElementById("slideshow");
@@ -168,7 +171,7 @@
 
         if (elapsed >= frameDuration) {
           const framesToAdvance = Math.floor(elapsed / frameDuration);
-          const nextImageIndex = (currentImageIndex + framesToAdvance) % slideshowImages.length;
+          const nextImageIndex = (currentImageIndex + framesToAdvance) % images.length;
           previousFrameTime += framesToAdvance * frameDuration;
           showImage(nextImageIndex);
         }

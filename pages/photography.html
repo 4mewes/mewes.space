@@ -5,16 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Photography</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
-        padding: 20px 16px 32px;
+        padding: 20px 16px 40px;
         font-family: "Times New Roman", serif;
+        background: #000;
+        color: #fff;
+      }
+
+      a {
+        color: #d7e6ff;
+      }
+
+      main {
+        width: 100%;
+      }
+
+      .posts {
+        display: grid;
+        gap: 28px;
+      }
+
+      .post {
+        display: grid;
+        gap: 10px;
+      }
+
+      .post-images {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .post-images.three-up {
+        --stack-gap: 10px;
+        gap: var(--stack-gap);
+        width: 100%;
+        padding-inline: 100px;
+        grid-template-columns:
+          calc((2 * (100% - (2 * var(--stack-gap)))) / 3 + var(--stack-gap))
+          calc((100% - (2 * var(--stack-gap))) / 3);
+        align-items: start;
+      }
+
+      .post-images.four-up {
+        --stack-gap: 10px;
+        gap: var(--stack-gap);
+        width: 100%;
+        padding-inline: 156px;
+        grid-template-columns:
+          calc((3 * (100% - (3 * var(--stack-gap)))) / 4 + (2 * var(--stack-gap)))
+          calc((100% - (3 * var(--stack-gap))) / 4);
+        align-items: start;
+      }
+
+      .post-images-main,
+      .post-images-stack {
+        display: grid;
+        gap: var(--stack-gap, 10px);
+      }
+
+      .post-images-main {
+        aspect-ratio: 1 / 1;
+      }
+
+      .post-images-stack img {
+        aspect-ratio: 1 / 1;
+      }
+
+      .post-images img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      @media (max-width: 700px) {
+        .post-images {
+          grid-template-columns: 1fr;
+        }
+
+        .post-images.three-up {
+          padding-inline: 0;
+          grid-template-columns: 1fr;
+        }
+
+        .post-images.four-up {
+          padding-inline: 0;
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Photography</h1>
-    <p><a href="../index.html">Home</a></p>
-    <p>I sometimes take photos! and even more sometimes i share them here</p>
+    <main>
+      <p><a href="../index.html">Home</a></p>
+
+      <section class="posts">
+        <article class="post">
+          <div class="post-images three-up">
+            <div class="post-images-main">
+              <img src="../media/zerstreut/post1.jpg" alt="zerstreut post 1 image 1">
+            </div>
+            <div class="post-images-stack">
+              <img src="../media/zerstreut/post1b.jpg" alt="zerstreut post 1 image 2">
+              <img src="../media/zerstreut/post1c.jpg" alt="zerstreut post 1 image 3">
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-images three-up">
+            <div class="post-images-main">
+              <img src="../media/zerstreut/post2.jpg" alt="zerstreut post 2 image 1">
+            </div>
+            <div class="post-images-stack">
+              <img src="../media/zerstreut/post2b.jpg" alt="zerstreut post 2 image 2">
+              <img src="../media/zerstreut/post2c.jpg" alt="zerstreut post 2 image 3">
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-images">
+            <img src="../media/zerstreut/post3.jpg" alt="zerstreut post 3 image 1">
+            <img src="../media/zerstreut/post3b.jpg" alt="zerstreut post 3 image 2">
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-images three-up">
+            <div class="post-images-main">
+              <img src="../media/zerstreut/post4.jpg" alt="zerstreut post 4 image 1">
+            </div>
+            <div class="post-images-stack">
+              <img src="../media/zerstreut/post4b.jpg" alt="zerstreut post 4 image 2">
+              <img src="../media/zerstreut/post4c.jpg" alt="zerstreut post 4 image 3">
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-images three-up">
+            <div class="post-images-main">
+              <img src="../media/zerstreut/post5.jpg" alt="zerstreut post 5 image 1">
+            </div>
+            <div class="post-images-stack">
+              <img src="../media/zerstreut/post5b.jpg" alt="zerstreut post 5 image 2">
+              <img src="../media/zerstreut/post5c.jpg" alt="zerstreut post 5 image 3">
+            </div>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-images four-up">
+            <div class="post-images-main">
+              <img src="../media/zerstreut/post6.jpg" alt="zerstreut post 6 image 1">
+            </div>
+            <div class="post-images-stack">
+              <img src="../media/zerstreut/post6b.jpg" alt="zerstreut post 6 image 2">
+              <img src="../media/zerstreut/post6c.jpg" alt="zerstreut post 6 image 3">
+              <img src="../media/zerstreut/post6d.jpg" alt="zerstreut post 6 image 4">
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
   </body>
 </html>

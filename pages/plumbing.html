@@ -7,16 +7,177 @@
     <style>
       body {
         margin: 0;
+        min-height: 100vh;
         padding: 20px 16px 32px;
         font-family: "Times New Roman", serif;
+        color: #fff;
+        background: #000 url("../media/plumbing/windows-screensaver.gif") center center / cover no-repeat fixed;
+        text-shadow: 0 1px 2px #000;
+      }
+
+      a {
+        color: #d7e6ff;
+      }
+
+      main {
+        position: relative;
+        z-index: 2;
+        width: min(680px, 100%);
+      }
+
+      .float-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .floating-plumbing-image {
+        position: fixed;
+        display: block;
+        max-width: min(68vw, 640px);
+        max-height: min(58vh, 520px);
+        object-fit: contain;
+        opacity: 1;
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+      }
+
+      .floating-plumbing-image.is-giant {
+        max-width: min(99vw, 1600px);
+        max-height: min(96vh, 1200px);
+      }
+
+      @media (max-width: 700px) {
+        body {
+          background-attachment: scroll;
+        }
+
+        .floating-plumbing-image {
+          max-width: min(82vw, 520px);
+          max-height: min(54vh, 420px);
+        }
+
+        .floating-plumbing-image.is-giant {
+          max-width: min(100vw, 1200px);
+          max-height: min(98vh, 1000px);
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Plumbing-Room</h1>
-    <p><a href="../index.html">Home</a></p>
-    <p>Nothing to see here... just dirt and pipes</p>
+    <div class="float-layer" id="float-layer" aria-hidden="true"></div>
+    <main>
+      <h1>Plumbing-Room</h1>
+      <p><a href="../index.html">Home</a></p>
+      <p>Nothing to see here... just dirt and pipes</p>
+    </main>
     <link href="https://melonking.net/styles/flood.css" rel="stylesheet" type="text/css" media="all">
     <script src="https://melonking.net/scripts/flood.js"></script>
+    <script>
+      const plumbingImages = [
+        "../media/plumbing/Screenshot 2026-05-08 at 23.19.37.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.20.47.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.21.05.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.21.29.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.21.48.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.22.23.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.22.54.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.23.17.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.23.55.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.24.28.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.24.56.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.25.16.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.25.50.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.44.56.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.45.37.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.46.01.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.46.26.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.46.44.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.47.29.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.48.51.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.51.54.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.54.04.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.54.23.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.54.51.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.56.48.png",
+        "../media/plumbing/pink-rat.gif",
+        "../media/plumbing/pink-rat.gif",
+        "../media/plumbing/rat-standoff.gif",
+        "../media/plumbing/rat.gif",
+        "../media/plumbing/resin.gif"
+      ];
+      const giantPlumbingImages = new Set([
+        "../media/plumbing/Screenshot 2026-05-08 at 23.20.47.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.22.54.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.25.50.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.24.56.png",
+        "../media/plumbing/Screenshot 2026-05-08 at 23.56.48.png",
+      ]);
+
+      const floatLayer = document.getElementById("float-layer");
+      const activePlumbingImages = new Set();
+
+      function randomFrom(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+
+      function spawnPlumbingImage() {
+        const image = document.createElement("img");
+        const src = randomFrom(plumbingImages);
+        const isGiant = giantPlumbingImages.has(src);
+        const size = isGiant ? 980 + Math.random() * 360 : 340 + Math.random() * 260;
+
+        image.className = "floating-plumbing-image";
+        if (isGiant) {
+          image.classList.add("is-giant");
+        }
+        image.src = src;
+        image.alt = "";
+        image.style.width = `${size}px`;
+        image.style.left = "0";
+        image.style.top = "0";
+        image.style.visibility = "hidden";
+
+        floatLayer.appendChild(image);
+        activePlumbingImages.add(image);
+
+        function positionImage() {
+          const rect = image.getBoundingClientRect();
+          const maxLeft = Math.max(window.innerWidth - rect.width, 0);
+          const maxTop = Math.max(window.innerHeight - rect.height, 0);
+          image.style.left = `${Math.random() * maxLeft}px`;
+          image.style.top = `${Math.random() * maxTop}px`;
+          image.style.visibility = "visible";
+        }
+
+        if (image.complete) {
+          positionImage();
+        } else {
+          image.addEventListener("load", positionImage, { once: true });
+          image.addEventListener("error", () => {
+            image.style.visibility = "visible";
+          }, { once: true });
+        }
+
+        if (activePlumbingImages.size > 6) {
+          const oldest = activePlumbingImages.values().next().value;
+          if (oldest) {
+            oldest.remove();
+            activePlumbingImages.delete(oldest);
+          }
+        }
+
+        window.setTimeout(() => {
+          image.remove();
+          activePlumbingImages.delete(image);
+        }, 22000);
+      }
+
+      window.setTimeout(() => {
+        spawnPlumbingImage();
+        window.setInterval(spawnPlumbingImage, 3000);
+      }, 2200);
+    </script>
   </body>
 </html>
