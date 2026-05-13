@@ -247,7 +247,10 @@
       watchButton.addEventListener("click", () => {
         canAutoplay = true;
         watchButton.classList.add("is-hidden");
-        showVideo(currentVideo, true);
+        player.src = "about:blank";
+        window.setTimeout(() => {
+          showVideo(currentVideo, true);
+        }, 0);
       });
 
       document.getElementById("previous").addEventListener("click", () => {
