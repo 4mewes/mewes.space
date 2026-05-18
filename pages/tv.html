@@ -31,6 +31,10 @@
         border: 0;
       }
 
+      .player-frame:not(.is-playing) iframe {
+        pointer-events: none;
+      }
+
       #watch {
         position: absolute;
         top: 50%;
@@ -231,6 +235,7 @@
       ];
 
       const player = document.getElementById("player");
+      const playerFrame = document.querySelector(".player-frame");
       const youtubeLink = document.getElementById("youtube-link");
       const watchButton = document.getElementById("watch");
       let currentVideo = 0;
@@ -250,10 +255,8 @@
       watchButton.addEventListener("click", () => {
         canAutoplay = true;
         watchButton.classList.add("is-hidden");
-        player.src = "about:blank";
-        window.setTimeout(() => {
-          showVideo(currentVideo, true);
-        }, 0);
+        playerFrame.classList.add("is-playing");
+        showVideo(currentVideo, true);
       });
 
       document.getElementById("previous").addEventListener("click", () => {
