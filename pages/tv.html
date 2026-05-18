@@ -41,7 +41,8 @@
         z-index: 5;
         display: grid;
         place-items: center;
-        pointer-events: none;
+        cursor: pointer;
+        pointer-events: auto;
       }
 
       .watch-overlay.is-hidden {
@@ -244,7 +245,6 @@
       const playerFrame = document.querySelector(".player-frame");
       const watchOverlay = document.getElementById("watch-overlay");
       const youtubeLink = document.getElementById("youtube-link");
-      const watchButton = document.getElementById("watch");
       let currentVideo = 0;
       let canAutoplay = false;
 
@@ -259,12 +259,19 @@
         youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
       }
 
-      watchButton.addEventListener("click", () => {
+      function updateYoutubeLink(index) {
+        currentVideo = (index + videos.length) % videos.length;
+        youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
+      }
+
+      function startWatching() {
         canAutoplay = true;
         watchOverlay.classList.add("is-hidden");
         playerFrame.classList.add("is-playing");
         showVideo(currentVideo, true);
-      });
+      }
+
+      watchOverlay.addEventListener("click", startWatching);
 
       document.getElementById("previous").addEventListener("click", () => {
         showVideo(currentVideo - 1);
@@ -274,7 +281,7 @@
         showVideo(currentVideo + 1);
       });
 
-      showVideo(currentVideo, false);
+      updateYoutubeLink(currentVideo);
     </script>
   </body>
 </html>
