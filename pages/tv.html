@@ -259,11 +259,6 @@
         youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
       }
 
-      function updateYoutubeLink(index) {
-        currentVideo = (index + videos.length) % videos.length;
-        youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
-      }
-
       function startWatching() {
         canAutoplay = true;
         watchOverlay.classList.add("is-hidden");
@@ -281,7 +276,7 @@
         showVideo(currentVideo + 1);
       });
 
-      updateYoutubeLink(currentVideo);
+      showVideo(currentVideo, false);
     </script>
   </body>
 </html>
