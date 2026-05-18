@@ -35,16 +35,24 @@
         pointer-events: none;
       }
 
-      #watch {
+      .watch-overlay {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        z-index: 3;
+        inset: 0;
+        z-index: 5;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .watch-overlay.is-hidden {
+        display: none;
+      }
+
+      #watch {
         display: block;
         padding: 0;
         background: transparent;
         border: 0;
-        transform: translate(-50%, -50%);
         pointer-events: auto;
       }
 
@@ -52,10 +60,6 @@
         display: block;
         width: 170px;
         height: auto;
-      }
-
-      #watch.is-hidden {
-        display: none;
       }
 
       .controls {
@@ -157,9 +161,6 @@
       <p><a href="../index.html">Home</a></p>
       <p>like doomscrolling but curated by me</p>
       <div class="player-frame">
-        <button id="watch" type="button" aria-label="Watch">
-          <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
-        </button>
         <iframe
           id="player"
           width="560"
@@ -171,6 +172,11 @@
           referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen
         ></iframe>
+        <div class="watch-overlay" id="watch-overlay">
+          <button id="watch" type="button" aria-label="Watch">
+            <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
+          </button>
+        </div>
         <div class="controls">
           <button id="previous" type="button" aria-label="Previous video">
             <img src="../media/gifs/gifs-used/point.left.gif" alt="">
@@ -236,6 +242,7 @@
 
       const player = document.getElementById("player");
       const playerFrame = document.querySelector(".player-frame");
+      const watchOverlay = document.getElementById("watch-overlay");
       const youtubeLink = document.getElementById("youtube-link");
       const watchButton = document.getElementById("watch");
       let currentVideo = 0;
@@ -254,7 +261,7 @@
 
       watchButton.addEventListener("click", () => {
         canAutoplay = true;
-        watchButton.classList.add("is-hidden");
+        watchOverlay.classList.add("is-hidden");
         playerFrame.classList.add("is-playing");
         showVideo(currentVideo, true);
       });
