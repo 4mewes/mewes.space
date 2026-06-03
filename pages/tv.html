@@ -26,8 +26,8 @@
         z-index: 0;
         display: block;
         width: 100%;
-        height: min(82vh, 900px);
-        min-height: 720px;
+        height: min(62vh, 440px);
+        min-height: 0;
         border: 0;
       }
 
@@ -35,21 +35,9 @@
         pointer-events: none;
       }
 
-      .watch-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 2147483647;
-        display: grid;
-        place-items: center;
-        pointer-events: none;
-      }
-
-      .watch-overlay.is-hidden {
-        display: none;
-      }
-
       #watch {
         display: block;
+        margin: 0 auto 12px;
         padding: 0;
         background: transparent;
         border: 0;
@@ -62,22 +50,27 @@
         height: auto;
       }
 
+      #watch.is-hidden {
+        display: none;
+      }
+
       .controls {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        overflow: visible;
+        position: static;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        pointer-events: auto;
       }
 
       .controls button {
-        position: absolute;
-        top: 50%;
+        position: static;
         z-index: 1;
         display: block;
         padding: 0;
         background: transparent;
         border: 0;
-        transform: translateY(-50%);
+        transform: none;
         pointer-events: auto;
       }
 
@@ -97,43 +90,16 @@
       }
 
       #previous {
-        left: -96px;
+        left: auto;
       }
 
       #next {
-        right: -96px;
+        right: auto;
       }
 
       @media (max-width: 900px) {
-        iframe {
-          height: min(62vh, 440px);
-          min-height: 0;
-        }
-
-        .controls {
-          position: static;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 10px;
-          pointer-events: auto;
-        }
-
-        .controls button {
-          position: static;
-          transform: none;
-        }
-
         .controls button img {
           width: 56px;
-        }
-
-        #previous {
-          left: auto;
-        }
-
-        #next {
-          right: auto;
         }
 
         #watch img {
@@ -160,6 +126,9 @@
     <div class="tv">
       <p><a href="../index.html">Home</a></p>
       <p>like doomscrolling but curated by me</p>
+      <button id="watch" type="button" aria-label="Watch" onclick="window.startWatchingTV && window.startWatchingTV()">
+        <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
+      </button>
       <div class="player-frame">
         <iframe
           id="player"
@@ -172,11 +141,6 @@
           referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen
         ></iframe>
-        <div class="watch-overlay" id="watch-overlay">
-          <button id="watch" type="button" aria-label="Watch" onclick="window.startWatchingTV && window.startWatchingTV()">
-            <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
-          </button>
-        </div>
         <div class="controls">
           <button id="previous" type="button" aria-label="Previous video">
             <img src="../media/gifs/gifs-used/point.left.gif" alt="">
@@ -239,7 +203,6 @@
 
       const player = document.getElementById("player");
       const playerFrame = document.querySelector(".player-frame");
-      const watchOverlay = document.getElementById("watch-overlay");
       const watchButton = document.getElementById("watch");
       let currentVideo = 0;
       let canAutoplay = false;
@@ -265,7 +228,7 @@
 
         hasStartedWatching = true;
         canAutoplay = true;
-        watchOverlay.classList.add("is-hidden");
+        watchButton.classList.add("is-hidden");
         playerFrame.classList.add("is-playing");
         player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', "*");
       }
