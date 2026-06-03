@@ -21,6 +21,11 @@
         width: 100%;
       }
 
+      .video-shell {
+        position: relative;
+        width: 100%;
+      }
+
       iframe {
         position: relative;
         z-index: 0;
@@ -36,12 +41,16 @@
       }
 
       #watch {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 2;
         display: block;
-        margin: 0 auto 12px;
         padding: 0;
         background: transparent;
         border: 0;
         pointer-events: auto;
+        transform: translate(-50%, -50%);
       }
 
       #watch img {
@@ -126,21 +135,23 @@
     <div class="tv">
       <p><a href="../index.html">Home</a></p>
       <p>like doomscrolling but curated by me</p>
-      <button id="watch" type="button" aria-label="Watch" onclick="window.startWatchingTV && window.startWatchingTV()">
-        <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
-      </button>
       <div class="player-frame">
-        <iframe
-          id="player"
-          width="560"
-          height="315"
-          src="about:blank"
-          title="YouTube video player"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen
-        ></iframe>
+        <div class="video-shell">
+          <iframe
+            id="player"
+            width="560"
+            height="315"
+            src="about:blank"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
+          <button id="watch" type="button" aria-label="Watch" onclick="window.startWatchingTV && window.startWatchingTV()">
+            <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
+          </button>
+        </div>
         <div class="controls">
           <button id="previous" type="button" aria-label="Previous video">
             <img src="../media/gifs/gifs-used/point.left.gif" alt="">
