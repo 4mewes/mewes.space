@@ -187,7 +187,6 @@
           </button>
         </div>
       </div>
-      <p><a id="youtube-link" href="#">Open on YouTube</a></p>
     </div>
 
     <script>
@@ -242,26 +241,27 @@
       const player = document.getElementById("player");
       const playerFrame = document.querySelector(".player-frame");
       const watchOverlay = document.getElementById("watch-overlay");
-      const youtubeLink = document.getElementById("youtube-link");
       let currentVideo = 0;
       let canAutoplay = false;
 
       function getEmbedUrl(videoId, autoplay = canAutoplay) {
         const autoplayParam = autoplay ? "&autoplay=1" : "";
-        return `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&playsinline=1&rel=0${autoplayParam}`;
+        const origin = window.location.origin && window.location.origin !== "null"
+          ? `&origin=${encodeURIComponent(window.location.origin)}`
+          : "";
+        return `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&playsinline=1&rel=0&enablejsapi=1${origin}${autoplayParam}`;
       }
 
       function showVideo(index, autoplay = canAutoplay) {
         currentVideo = (index + videos.length) % videos.length;
         player.src = getEmbedUrl(videos[currentVideo], autoplay);
-        youtubeLink.href = `https://www.youtube.com/watch?v=${videos[currentVideo]}&list=PLu38iozJFpfViWNgpdBYMwFlNyvebEeaT`;
       }
 
       function startWatching() {
         canAutoplay = true;
         watchOverlay.classList.add("is-hidden");
         playerFrame.classList.add("is-playing");
-        showVideo(currentVideo, true);
+        player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', "*");
       }
 
       watchOverlay.addEventListener("click", startWatching);
