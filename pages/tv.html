@@ -174,7 +174,7 @@
           allowfullscreen
         ></iframe>
         <div class="watch-overlay" id="watch-overlay">
-          <button id="watch" type="button" aria-label="Watch">
+          <button id="watch" type="button" aria-label="Watch" onclick="window.startWatchingTV && window.startWatchingTV()">
             <img src="../media/gifs/gifs-used/clickhere_blue.gif" alt="">
           </button>
         </div>
@@ -241,8 +241,10 @@
       const player = document.getElementById("player");
       const playerFrame = document.querySelector(".player-frame");
       const watchOverlay = document.getElementById("watch-overlay");
+      const watchButton = document.getElementById("watch");
       let currentVideo = 0;
       let canAutoplay = false;
+      let hasStartedWatching = false;
 
       function getEmbedUrl(videoId, autoplay = canAutoplay) {
         const autoplayParam = autoplay ? "&autoplay=1" : "";
@@ -258,13 +260,21 @@
       }
 
       function startWatching() {
+        if (hasStartedWatching) {
+          return;
+        }
+
+        hasStartedWatching = true;
         canAutoplay = true;
         watchOverlay.classList.add("is-hidden");
         playerFrame.classList.add("is-playing");
         player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', "*");
       }
 
+      window.startWatchingTV = startWatching;
       watchOverlay.addEventListener("click", startWatching);
+      watchButton.addEventListener("click", startWatching);
+      watchOverlay.addEventListener("touchstart", startWatching, { passive: true });
 
       document.getElementById("previous").addEventListener("click", () => {
         showVideo(currentVideo - 1);
