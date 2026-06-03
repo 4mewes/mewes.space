@@ -1,6 +1,14 @@
 (function() {
   'use strict';
 
+  const PECK_FRAMES = {
+    START: 0,
+    TRANSITION: 1,
+    REST: 2,
+    DOWN: 3,
+    DEEP_DOWN: 4
+  };
+
   class PNGRenderer {
     constructor() {
       this.container = null;
@@ -9,10 +17,15 @@
       this.currentFrameIndex = 0;
       this.frameTimer = 0;
       this.preloadedFrames = {};
+      this.framePaths = {};
+      this.peckPhase = 'start';
+      this.peckLoopWait = 0;
+      this.pauseFrameWait = 0;
+      this.stateTimer = 0;
+      this.stateTimerLimit = 0;
     }
 
     init() {
-      console.log('Pigeons!!!! PNGRenderer initializing.');
       this.injectStyles();
       this.createDOM();
       this._preloadAllAssets();
@@ -20,23 +33,28 @@
 
     injectStyles() {
       if (document.getElementById('pigeon-styles-png')) return;
+      const pngRendering = window.PIGEON_CONFIG.PNG_RENDERING || {};
+      const width = pngRendering.WIDTH || window.PIGEON_CONFIG.DIMENSIONS.WIDTH;
+      const height = pngRendering.HEIGHT || Math.round(width * 0.75);
       const style = document.createElement('style');
       style.id = 'pigeon-styles-png';
       style.textContent = `
-        .pgn-png {
+        .pigeon-ext-png-container {
           position: fixed;
+          left: 0;
           bottom: 0;
+          width: ${width}px;
+          height: ${height}px;
           z-index: 2147483647;
           pointer-events: none;
           user-select: none;
-          width: ${window.PIGEON_CONFIG.DIMENSIONS.WIDTH}px;
-          height: ${window.PIGEON_CONFIG.DIMENSIONS.HEIGHT}px;
-          will-change: transform, left, bottom;
+          will-change: transform;
+          transform-origin: center bottom;
           display: block !important;
           visibility: visible !important;
           opacity: 1 !important;
         }
-        .pgn-png img {
+        .pigeon-ext-png-container img {
           width: 100%;
           height: 100%;
           display: block;
@@ -47,31 +65,25 @@
 
     createDOM() {
       if (!document.body) {
-        console.warn('Pigeons!!!! document.body not found, delaying DOM creation.');
         setTimeout(() => this.createDOM(), 100);
         return;
       }
 
       this.container = document.createElement('div');
-      this.container.className = 'pgn-png';
-
+      this.container.className = 'pigeon-ext-png-container';
       this.img = document.createElement('img');
       const assets = window.PIGEON_CONFIG.PNG_ASSETS;
-      const initialFrame = (assets.walking && assets.walking.length > 0) ? assets.walking[0] : '';
-      
-      if (initialFrame) {
-        this.img.src = window.getPigeonAssetURL(initialFrame);
-      }
-
+      const initialFrame = (assets.walking && assets.walking.length > 0) ? assets.walking.find(f => f.match(/\.(png|svg)$/i)) : '';
+      if (initialFrame) this.img.src = window.getPigeonAssetURL(initialFrame);
       this.container.appendChild(this.img);
       document.body.appendChild(this.container);
-      console.log('Pigeons!!!! PNGRenderer DOM created and appended to body.');
     }
 
     _preloadAllAssets() {
       const assets = window.PIGEON_CONFIG.PNG_ASSETS;
       for (const state in assets) {
-        this.preloadedFrames[state] = assets[state].map(path => {
+        this.framePaths[state] = assets[state].filter(path => path.match(/\.(png|svg)$/i));
+        this.preloadedFrames[state] = this.framePaths[state].map(path => {
           const i = new Image();
           i.src = window.getPigeonAssetURL(path);
           return i.src;
@@ -79,65 +91,155 @@
       }
     }
 
-    /**
-     * @param {number} x 
-     * @param {number} y 
-     * @param {number} faceDir 
-     * @param {string} state - The current behavior state (walking, pausing, etc.)
-     * @param {number} dt 
-     * @param {number} currentSpeed
-     */
-    update(x, y, faceDir, state, dt = 1, currentSpeed = 1) {
+    update(x, y, faceDir, state, dt = 1, currentSpeed = 1, stateTimer = 0, stateTimerLimit = 0) {
       if (!this.container) return;
 
-      // Detect state change internally
+      this.stateTimer = stateTimer;
+      this.stateTimerLimit = stateTimerLimit;
+
       if (this.currentState !== state) {
         this.currentState = state;
         this.currentFrameIndex = 0;
         this.frameTimer = 0;
+        if (state === 'pecking') {
+          this.peckPhase = 'start';
+          this.peckLoopWait = 0;
+        } else if (state === 'pausing') {
+          this.pauseFrameWait = 0;
+        }
         this._updateSprite();
       }
 
-      // 1. Move
-      this.container.style.left = `${Math.round(x)}px`;
-      this.container.style.bottom = `${Math.round(y)}px`;
-      this.container.style.transform = `scaleX(${-faceDir})`;
+      const scaleX = (state === 'pecking') ? faceDir : -faceDir;
+      this.container.style.transform = `translate3d(${Math.round(x)}px, ${-Math.round(y)}px, 0) scaleX(${scaleX})`;
 
-      // 2. Animate (Handles cycling for multi-frame animations)
       this._animate(dt, currentSpeed);
     }
 
     _animate(dt, speed) {
-      let frames = this.preloadedFrames[this.currentState] || [];
-      
-      if (frames.length === 0) {
-        frames = this.preloadedFrames['walking'];
-      }
+      const frameSpeed = this.currentState === 'pausing' ? 1 : speed;
+      this.frameTimer += dt * frameSpeed;
+      const threshold = this._getFrameThreshold();
 
-      if (!frames || frames.length === 0) return;
-
-      if (frames.length === 1) {
-        this.currentFrameIndex = 0;
-        this._updateSprite(frames);
-        return;
-      }
-
-      this.frameTimer += dt * speed;
-
-      // Get state-specific threshold (default to 6 if not found)
-      const threshold = window.PIGEON_CONFIG.ANIMATION.DURATIONS[this.currentState] || 6;
-      
       if (this.frameTimer >= threshold) {
         this.frameTimer = 0;
-        this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;
-        this._updateSprite(frames);
+        if (this.currentState === 'pecking') {
+          this._advancePeckFrame();
+        } else {
+          const frames = this.preloadedFrames[this.currentState] || this.preloadedFrames['walking'];
+          if (frames.length > 1) {
+            this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;
+            if (this.currentState === 'pausing') {
+              this.pauseFrameWait = 0;
+            }
+          }
+        }
+        this._updateSprite();
       }
     }
 
-    _updateSprite(frames) {
-      const activeFrames = frames || this.preloadedFrames[this.currentState] || this.preloadedFrames['walking'];
+    _getFrameThreshold() {
+      const { ANIMATION } = window.PIGEON_CONFIG;
+
+      if (this.currentState === 'pecking' && this.peckPhase === 'loop-wait') {
+        return this.peckLoopWait || this._pickPeckLoopWait();
+      }
+
+      if (this.currentState === 'pausing') {
+        if (!this.pauseFrameWait) {
+          this.pauseFrameWait = this._pickPauseFrameWait();
+        }
+        return this.pauseFrameWait;
+      }
+
+      return ANIMATION.DURATIONS[this.currentState] || 6;
+    }
+
+    _advancePeckFrame() {
+      const { ANIMATION } = window.PIGEON_CONFIG;
+      const frameDuration = ANIMATION.DURATIONS.pecking || 8;
+      const minLoopWait = ANIMATION.PECK_LOOP_WAIT_MIN || 18;
+      const maxLoopWait = ANIMATION.PECK_LOOP_WAIT_MAX || 120;
+      const exitLeadTime = frameDuration * 2;
+      const loopCycleTime = frameDuration * 2;
+      const remainingPeckTime = this.stateTimerLimit - this.stateTimer;
+      const canCompleteAnotherLoop = remainingPeckTime > exitLeadTime + loopCycleTime;
+      const canWaitThenLoop = remainingPeckTime > exitLeadTime + minLoopWait + loopCycleTime;
+
+      if (this.peckPhase === 'start') {
+        this.currentFrameIndex++;
+        if (this.currentFrameIndex >= PECK_FRAMES.REST) {
+          this.peckPhase = 'loop';
+          this.currentFrameIndex = PECK_FRAMES.REST;
+        }
+      } else if (this.peckPhase === 'loop') {
+        if (!canCompleteAnotherLoop) {
+          this.peckPhase = 'exit';
+          this.currentFrameIndex = PECK_FRAMES.TRANSITION;
+        } else {
+          this.peckPhase = 'loop-return';
+          this.currentFrameIndex = this._getPeckDownFrame();
+        }
+      } else if (this.peckPhase === 'loop-return') {
+        this.currentFrameIndex = PECK_FRAMES.REST;
+        if (remainingPeckTime <= exitLeadTime) {
+          this.peckPhase = 'exit';
+          this.currentFrameIndex = PECK_FRAMES.TRANSITION;
+        } else if (canWaitThenLoop) {
+          this.peckPhase = 'loop-wait';
+          this.peckLoopWait = this._pickPeckLoopWait(Math.min(maxLoopWait, remainingPeckTime - exitLeadTime - loopCycleTime));
+        } else {
+          this.peckPhase = 'exit-wait';
+        }
+      } else if (this.peckPhase === 'loop-wait') {
+        if (canCompleteAnotherLoop) {
+          this.peckPhase = 'loop-return';
+          this.peckLoopWait = 0;
+          this.currentFrameIndex = this._getPeckDownFrame();
+        } else {
+          this.peckPhase = 'exit-wait';
+          this.peckLoopWait = 0;
+          this.currentFrameIndex = PECK_FRAMES.REST;
+        }
+      } else if (this.peckPhase === 'exit-wait') {
+        if (remainingPeckTime <= exitLeadTime) {
+          this.peckPhase = 'exit';
+          this.currentFrameIndex = PECK_FRAMES.TRANSITION;
+        }
+      } else if (this.peckPhase === 'exit') {
+        this.currentFrameIndex--;
+        if (this.currentFrameIndex < 0) {
+          this.currentFrameIndex = PECK_FRAMES.START;
+        }
+      }
+    }
+
+    _getPeckDownFrame() {
+      return Math.random() < 0.12 ? PECK_FRAMES.DEEP_DOWN : PECK_FRAMES.DOWN;
+    }
+
+    _pickPeckLoopWait(maxWait) {
+      const { ANIMATION } = window.PIGEON_CONFIG;
+      const min = ANIMATION.PECK_LOOP_WAIT_MIN || 18;
+      const configuredMax = ANIMATION.PECK_LOOP_WAIT_MAX || 120;
+      const max = Math.max(min, Math.floor(maxWait || configuredMax));
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    _pickPauseFrameWait() {
+      const { ANIMATION } = window.PIGEON_CONFIG;
+      const min = ANIMATION.PAUSE_FRAME_WAIT_MIN || 18;
+      const configuredMax = ANIMATION.PAUSE_FRAME_WAIT_MAX || 120;
+      const max = Math.max(min, configuredMax);
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    _updateSprite() {
+      const activeFrames = this.preloadedFrames[this.currentState] || this.preloadedFrames['walking'];
+
       if (activeFrames && activeFrames[this.currentFrameIndex]) {
         const nextSrc = activeFrames[this.currentFrameIndex];
+
         if (this.img.src !== nextSrc) {
           this.img.src = nextSrc;
         }
@@ -145,9 +247,7 @@
     }
 
     destroy() {
-      if (this.container && this.container.parentNode) {
-        this.container.parentNode.removeChild(this.container);
-      }
+      if (this.container && this.container.parentNode) this.container.parentNode.removeChild(this.container);
       this.container = null;
       this.img = null;
     }

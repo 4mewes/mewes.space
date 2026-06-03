@@ -6,26 +6,58 @@
     <title>pigeons!!!!</title>
     <script src="../pigeon/PigeonConfig.js"></script>
     <script src="../pigeon/MouseTracker.js"></script>
+    <script src="../pigeon/BreadCrumbManager.js"></script>
     <script src="../pigeon/PNGRenderer.js"></script>
     <script src="../pigeon/Pigeon.js"></script>
     <style>
       body {
         margin: 0;
-        padding: 20px 16px 40px;
+        min-height: 100vh;
+        overflow: hidden;
+        padding: 20px 16px;
       }
 
-      .surprise-pigeon {
+      body > p,
+      .download-section {
+        position: relative;
+        z-index: 2;
+      }
+
+      body > p {
+        width: fit-content;
+        max-width: min(420px, calc(100vw - 32px));
+        background: #fff;
+      }
+
+      .scene-layer {
         position: fixed;
-        left: 0;
-        top: 0;
-        width: min(220px, 32vw);
-        will-change: transform;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .scene-layer img {
+        position: absolute;
+        display: block;
+        width: var(--scene-width);
+        max-width: none;
+        height: auto;
+        transform: rotate(var(--scene-rotation));
+        filter: saturate(0.95);
       }
 
       .download-section {
-        margin-top: 70vh;
-        margin-bottom: 120px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 48px;
         text-align: center;
+        width: fit-content;
+        max-width: calc(100vw - 32px);
+        margin: 0 auto;
+        padding: 8px 10px;
+        background: #fff;
       }
 
       .virus-download {
@@ -53,13 +85,8 @@
           padding: 16px 12px 28px;
         }
 
-        .surprise-pigeon {
-          width: min(140px, 30vw);
-        }
-
         .download-section {
-          margin-top: 48vh;
-          margin-bottom: 72px;
+          bottom: 36px;
         }
 
         .virus-download {
@@ -69,25 +96,59 @@
     </style>
   </head>
   <body>
-    <h1>pigeons!!!!</h1>
+    <div class="scene-layer" id="scene-layer" aria-hidden="true"></div>
     <p><a href="../index.html">Home</a></p>
-    <p>pigeons are important. so I made an chrome extension</p>
-    <img class="surprise-pigeon" src="../media/pigeon/graphics/pause1/pause1_0004.png" alt="A pigeon">
+    <p>the internet is a public space, so here are the pigeons; <strong>click</strong> to feed</p>
     <section class="download-section">
-      <a class="virus-download" href="../downloads/pigeons-extension.zip" download>Download now</a>
+      <a class="virus-download" href="https://chromewebstore.google.com/">Download now</a>
       <p class="download-note"><sub>(not a virus just my pigeon extension)</sub></p>
     </section>
     <script>
+      const sceneImages = [
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.59.14.png",
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.57.38.png",
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.56.35.png",
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.58.38.png",
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.57.08.png",
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.59.48.png",
+        "../media/pigeon/scenes/Screenshot 2026-06-03 at 14.57.21.png"
+      ];
       const pigeons = [];
-      const spinningPigeon = document.querySelector(".surprise-pigeon");
-      let spinningX = 160;
-      let spinningY = 140;
-      let spinningVelX = 1.4;
-      let spinningVelY = 0.9;
-      let spinningRotation = 0;
+      const breadCrumbManager = new window.BreadCrumbManager(window.PIGEON_CONFIG);
+      const sceneLayer = document.getElementById("scene-layer");
+      const sceneSlots = [
+        { x: 4, y: 26, width: 24, rotation: -3.5 },
+        { x: 38, y: 4, width: 18, rotation: 2 },
+        { x: 62, y: 9, width: 28, rotation: -1 },
+        { x: 13, y: 38, width: 20, rotation: 3.5 },
+        { x: 45, y: 31, width: 25, rotation: -2.5 },
+        { x: 74, y: 54, width: 24, rotation: 2.8 },
+        { x: 4, y: 66, width: 23, rotation: -1.8 }
+      ];
 
-      for (let i = 0; i < 3; i++) {
-        pigeons.push(new window.Pigeon(new window.PNGRenderer()));
+      sceneImages.forEach((src, index) => {
+        const image = document.createElement("img");
+        const slot = sceneSlots[index % sceneSlots.length];
+
+        image.src = src;
+        image.alt = "";
+        image.style.left = `${slot.x}vw`;
+        image.style.top = `${slot.y}vh`;
+        image.style.setProperty("--scene-width", `${slot.width}vw`);
+        image.style.setProperty("--scene-rotation", `${slot.rotation}deg`);
+        sceneLayer.appendChild(image);
+      });
+
+      breadCrumbManager.init();
+
+      for (let i = 0; i < 10; i++) {
+        pigeons.push(new window.Pigeon(
+          new window.PNGRenderer(),
+          window.PIGEON_CONFIG,
+          window.MouseTracker,
+          window.PIGEON_STATES,
+          breadCrumbManager
+        ));
       }
 
       let lastTime = performance.now();
@@ -97,37 +158,8 @@
         lastTime = now;
 
         pigeons.forEach((pigeon) => pigeon.update(dt));
-        moveSpinningPigeon(dt);
+        breadCrumbManager.update(dt);
         requestAnimationFrame(tick);
-      }
-
-      function moveSpinningPigeon(dt) {
-        const width = spinningPigeon.offsetWidth;
-        const height = spinningPigeon.offsetHeight;
-        const maxX = Math.max(0, window.innerWidth - width);
-        const maxY = Math.max(0, window.innerHeight - height);
-
-        spinningX += spinningVelX * dt;
-        spinningY += spinningVelY * dt;
-        spinningRotation += 1.2 * dt;
-
-        if (spinningX < 0) {
-          spinningVelX *= -1;
-          spinningX = 0;
-        } else if (spinningX > maxX) {
-          spinningVelX *= -1;
-          spinningX = maxX;
-        }
-
-        if (spinningY < 0) {
-          spinningVelY *= -1;
-          spinningY = 0;
-        } else if (spinningY > maxY) {
-          spinningVelY *= -1;
-          spinningY = maxY;
-        }
-
-        spinningPigeon.style.transform = `translate(${spinningX}px, ${spinningY}px) rotate(${spinningRotation}deg)`;
       }
 
       requestAnimationFrame(tick);

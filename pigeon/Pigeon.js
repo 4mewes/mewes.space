@@ -10,13 +10,15 @@
       renderer = new window.SVGRenderer(),
       config = window.PIGEON_CONFIG,
       inputTracker = window.MouseTracker,
-      states = window.PIGEON_STATES
+      states = window.PIGEON_STATES,
+      breadCrumbs = null
     ) {
       // Configuration & Dependencies
       this.renderer = renderer;
       this.config = config;
       this.inputTracker = inputTracker;
       this.states = states;
+      this.breadCrumbs = breadCrumbs;
 
       // Initialization
       this.inputTracker.init();
@@ -40,6 +42,9 @@
       this.inputTimer = 0;
       this.lastDist = 2000;
       this.lastMouseRel = { dx: 0, dy: 0 };
+      this.isSeekingCrumb = false;
+      this.crumbTargetId = null;
+      this.eatingCrumbId = null;
 
       this.setRandomDirection();
     }
@@ -52,7 +57,7 @@
       this._processInput(dt);
       this._updateState(dt);
       this._applyPhysics(dt);
-      this.renderer.update(this.x, this.y, this.faceDir, this.state, dt, this.currentSpeedMult);
+      this.renderer.update(this.x, this.y, this.faceDir, this.state, dt, this.currentSpeedMult, this.timer, this.timerLimit);
     }
 
     /**
@@ -61,6 +66,7 @@
     _processInput(dt) {
       const { ZONES, SPEED, DIMENSIONS } = this.config;
       const mouse = this.inputTracker.getPosition();
+      this.isSeekingCrumb = false;
       
       // Calculate Bottom-Left relative vector
       const mx = mouse.x;
@@ -74,15 +80,20 @@
 
       // 1. ESCAPE ZONE (Fleeing) - This ALWAYS forces flying
       if (dist < ZONES.ESCAPE && this.state !== this.states.FLYING) {
+        this._clearCrumbIntent();
         this.transitionTo(this.states.FLYING);
         this._pickEscapeDir(dx, dy, dist);
         return;
       }
 
-      if (this.state === this.states.FLYING) return;
+      if (this.state === this.states.FLYING) {
+        this._clearCrumbIntent();
+        return;
+      }
 
       // 2. RETREAT ZONE (Skittish dodging)
       if (dist < ZONES.RETREAT) {
+        this._clearCrumbIntent();
         const factor = (ZONES.RETREAT - dist) / (ZONES.RETREAT - ZONES.ESCAPE);
         this.currentSpeedMult = 1 + (factor * SPEED.RETREAT_MULT_MAX);
         
@@ -115,10 +126,73 @@
         this.currentSpeedMult = 1;
         this.retreatBias = 0;
         this.inputTimer = 0;
+        this._processBreadCrumbs();
       }
 
       this.lastDist = dist;
       this.lastMouseRel = { dx, dy };
+    }
+
+    _processBreadCrumbs() {
+      if (!this.breadCrumbs || this.state === this.states.FLYING) return;
+      if (this.state === this.states.PECKING || this.state === this.states.PAUSING || this.state === this.states.SHAKING) return;
+
+      const { ATTRACTION_RADIUS, EAT_RADIUS } = this.config.BREAD_CRUMBS;
+      const ground = this._getGroundPosition();
+      const nearest = this.breadCrumbs.getNearestAvailableCrumb(ground.x, ground.y, ATTRACTION_RADIUS);
+      if (!nearest) {
+        this._clearCrumbIntent(true);
+        return;
+      }
+
+      this.isSeekingCrumb = true;
+      this.crumbTargetId = nearest.crumb.id;
+      this.currentSpeedMult = 1;
+
+      if (nearest.dist <= EAT_RADIUS) {
+        const claimed = this.breadCrumbs.claimCrumb(nearest.crumb.id);
+        if (claimed) {
+          this.eatingCrumbId = claimed.id;
+          this.breadCrumbs.eatCrumb(claimed.id);
+          this.velX = 0;
+          this.velY = 0;
+          this._clearCrumbIntent();
+          this.transitionTo(this.states.PECKING);
+        }
+        return;
+      }
+
+      const angle = Math.atan2(nearest.dy, nearest.dx);
+      this.velX = Math.cos(angle);
+      this.velY = Math.sin(angle);
+      this.faceDir = this.velX > 0 ? 1 : -1;
+    }
+
+    _getGroundPosition() {
+      const renderWidth = (this.config.PNG_RENDERING && this.config.PNG_RENDERING.WIDTH) || this.config.DIMENSIONS.WIDTH;
+      return {
+        x: this.x + renderWidth / 2,
+        y: this.y
+      };
+    }
+
+    _clearCrumbIntent(pickNewDirection = false) {
+      const hadCrumbIntent = this.crumbTargetId !== null;
+      this.crumbTargetId = null;
+
+      if (pickNewDirection && hadCrumbIntent && this.state === this.states.WALKING) {
+        this.setRandomDirection();
+        this.timer = 0;
+        this.nextDecision = this._getRandomDecisionTime();
+      }
+    }
+
+    _hasAvailableCrumbs() {
+      return Boolean(
+        this.breadCrumbs &&
+        typeof this.breadCrumbs.hasAvailableCrumbs === 'function' &&
+        this.breadCrumbs.hasAvailableCrumbs()
+      );
     }
 
     /**
@@ -147,6 +221,9 @@
       if (this.state === newState) return;
       this.state = newState;
       this.timer = 0;
+      if (newState !== this.states.PECKING) {
+        this.eatingCrumbId = null;
+      }
 
       const { ANIMATION } = this.config;
       if (newState === this.states.FLYING) {
@@ -175,6 +252,8 @@
       }
 
       // Random idle decisions
+      if (this.isSeekingCrumb) return;
+
       if (this.timer >= this.nextDecision) {
         this.timer = 0;
         this.nextDecision = this._getRandomDecisionTime();
@@ -186,25 +265,20 @@
       const roll = Math.random();
       const { PROBABILITY, ZONES } = this.config;
 
-      // 1. Check for idle actions first (Pecking/Pausing/Shaking)
-      if (roll < PROBABILITY.PECK) {
-        this.transitionTo(this.states.PECKING);
-        return;
-      }
-      
-      if (roll < (PROBABILITY.PECK + PROBABILITY.PAUSE)) {
+      // 1. Check for idle actions first (Pausing/Shaking)
+      if (roll < PROBABILITY.PAUSE) {
         this.transitionTo(this.states.PAUSING);
         return;
       }
 
-      if (roll < (PROBABILITY.PECK + PROBABILITY.PAUSE + PROBABILITY.SHAKE)) {
+      if (roll < (PROBABILITY.PAUSE + PROBABILITY.SHAKE)) {
         this.transitionTo(this.states.SHAKING);
         return;
       }
 
       // 2. If we're walking, decide where to go
       // Stalking logic: Curious approach, but less direct
-      if (this.lastDist < ZONES.STALK && this.lastDist > ZONES.RETREAT) {
+      if (!this._hasAvailableCrumbs() && this.lastDist < ZONES.STALK && this.lastDist > ZONES.RETREAT) {
         if (Math.random() < PROBABILITY.STALK_FOLLOW) {
           // If we were doing something else, switch back to walking to stalk
           this.transitionTo(this.states.WALKING);

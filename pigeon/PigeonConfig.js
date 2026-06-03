@@ -22,10 +22,24 @@
       STALK_MULT: 1,
       RETREAT_MULT_MAX: 4
     },
+    BREAD_CRUMBS: {
+      ATTRACTION_RADIUS: 350,
+      EAT_RADIUS: 5,
+      DROP_DISTANCE: 24,
+      DROP_DURATION_MS: 180,
+      MAX_ACTIVE: 12,
+      SIZE: 12,
+      BLOCK_SIZE: 3,
+      DARK_BACKGROUND_LUMINANCE: 45
+    },
     ANIMATION: {
       PECK_DURATION: 180,
+      PECK_LOOP_WAIT_MIN: 18,
+      PECK_LOOP_WAIT_MAX: 120,
       PAUSE_MIN: 120,
       PAUSE_MAX: 300,
+      PAUSE_FRAME_WAIT_MIN: 45,
+      PAUSE_FRAME_WAIT_MAX: 120,
       SHAKE_DURATION: 60,
       FLY_MIN: 50,
       FLY_MAX: 80,
@@ -38,56 +52,48 @@
       }
     },
     PROBABILITY: {
-      PECK: 0.05,
       PAUSE: 0.2,
-      SHAKE: 0.05,
+      SHAKE: 0,
       STALK_FOLLOW: 0.4
     },
     DIMENSIONS: {
       WIDTH: 64,
-      HEIGHT: 52,
+      HEIGHT: 114,
       RESERVE_X: 70,
-      RESERVE_Y: 60
+      RESERVE_Y: 120
+    },
+    PNG_RENDERING: {
+      WIDTH: 76,
+      HEIGHT: 57
     },
     PNG_ASSETS: {
       walking: [
-        'graphics/walk1/walk1_0003.png',
-        'graphics/walk1/walk1_0007.png',
-        'graphics/walk1/walk1_0008.png',
-        'graphics/walk1/walk1_0009.png',
-        'graphics/walk1/walk1_0010.png',
+        'graphics/normalized/walk1/walk1_0003.png',
+        'graphics/normalized/walk1/walk1_0007.png',
+        'graphics/normalized/walk1/walk1_0008.png',
+        'graphics/normalized/walk1/walk1_0009.png',
+        'graphics/normalized/walk1/walk1_0010.png',
       ],
       pecking: [
-        'graphics/walk1/walk1_0007.png',
-        'graphics/walk1/walk1_0003.png',
+        'graphics/normalized/peck/peck_0001.png', // 0: start/end
+        'graphics/normalized/peck/peck_0023.png', // 1: transition
+        'graphics/normalized/peck/peck_0027.png', // 2: loop rest
+        'graphics/normalized/peck/peck_0032.png', // 3: loop
+        'graphics/normalized/peck/peck_0049.png', // 4: rare loop
       ],
       pausing: [
-        'graphics/pause1/pause1_0004.png',
-        'graphics/pause1/pause1_0012.png',
-        'graphics/pause1/pause1_0013.png',
-        'graphics/pause1/pause1_0014.png',
-        'graphics/pause1/pause1_0015.png',
-        'graphics/pause1/pause1_00016.png',
-        'graphics/pause1/pause1_0017.png',
-        'graphics/pause1/pause1_0018.png',
+        'graphics/normalized/pause1/pause1_0017.png',
+        'graphics/normalized/pause1/pause1_0018.png',
       ],
-      shaking: [
-        'graphics/shake1/shake1_0001.png', 'graphics/shake1/shake1_0002.png', 'graphics/shake1/shake1_0003.png',
-        'graphics/shake1/shake1_0004.png', 'graphics/shake1/shake1_0005.png', 'graphics/shake1/shake1_0006.png',
-        'graphics/shake1/shake1_0007.png', 'graphics/shake1/shake1_0008.png', 'graphics/shake1/shake1_0009.png',
-        'graphics/shake1/shake1_0010.png', 'graphics/shake1/shake1_0011.png', 'graphics/shake1/shake1_0012.png',
-        'graphics/shake1/shake1_0013.png', 'graphics/shake1/shake1_0014.png', 'graphics/shake1/shake1_0015.png',
-        'graphics/shake1/shake1_0016.png', 'graphics/shake1/shake1_0017.png', 'graphics/shake1/shake1_0018.png',
-        'graphics/shake1/shake1_0019.png', 'graphics/shake1/shake1_0020.png', 'graphics/shake1/shake1_0021.png',
-        'graphics/shake1/shake1_0022.png', 'graphics/shake1/shake1_0023.png', 'graphics/shake1/shake1_0024.png',
-        'graphics/shake1/shake1_0025.png', 'graphics/shake1/shake1_0026.png', 'graphics/shake1/shake1_0027.png',
-        'graphics/shake1/shake1_0028.png', 'graphics/shake1/shake1_0029.png', 'graphics/shake1/shake1_0030.png',
-      ],
+      shaking: [],
       flying:  []
     }
   };
 
   window.getPigeonAssetURL = function(path) {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+      return chrome.runtime.getURL(path);
+    }
     return '../media/pigeon/' + path;
   };
 
