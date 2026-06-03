@@ -41,8 +41,7 @@
         z-index: 5;
         display: grid;
         place-items: center;
-        cursor: pointer;
-        pointer-events: auto;
+        pointer-events: none;
       }
 
       .watch-overlay.is-hidden {
@@ -272,9 +271,7 @@
       }
 
       window.startWatchingTV = startWatching;
-      watchOverlay.addEventListener("click", startWatching);
       watchButton.addEventListener("click", startWatching);
-      watchOverlay.addEventListener("touchstart", startWatching, { passive: true });
 
       document.getElementById("previous").addEventListener("click", () => {
         showVideo(currentVideo - 1);

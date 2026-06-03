@@ -24,6 +24,18 @@
         border-radius: 50%;
       }
 
+      .index-image {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        display: block;
+        width: 280px;
+        height: 280px;
+        object-fit: cover;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+      }
+
       nav a {
         position: absolute;
         color: #111;
@@ -439,6 +451,11 @@
           height: min(434px, calc(100vw - 14px));
         }
 
+        .index-image {
+          width: min(210px, 48vw);
+          height: min(210px, 48vw);
+        }
+
         nav a {
           font-size: clamp(0.96rem, 3.5vw, 1.15rem);
           line-height: 1.1;
@@ -463,7 +480,9 @@
     </style>
   </head>
   <body>
-    <nav aria-label="Main links"></nav>
+    <nav aria-label="Main links">
+      <img class="index-image" src="media/index/IMG_9323.jpg" alt="">
+    </nav>
     <div class="hello-bubble" id="hello-bubble" hidden></div>
     <div class="guestbook-popup-backdrop" id="guestbook-backdrop" hidden></div>
     <section class="guestbook-popup" id="guestbook-popup" hidden aria-label="Guestbook popup">
