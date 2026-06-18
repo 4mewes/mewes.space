@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Website</title>
+    <title>mewes.space</title>
     <style>
       body {
         display: grid;
@@ -28,12 +28,18 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        display: block;
-        width: 280px;
-        height: 280px;
-        object-fit: cover;
+        display: none;
+        max-width: 280px;
+        max-height: 280px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
         pointer-events: none;
         transform: translate(-50%, -50%);
+      }
+
+      .index-image.is-loaded {
+        display: block;
       }
 
       nav a {
@@ -452,8 +458,8 @@
         }
 
         .index-image {
-          width: min(210px, 48vw);
-          height: min(210px, 48vw);
+          max-width: min(210px, 48vw);
+          max-height: min(210px, 48vw);
         }
 
         nav a {
@@ -481,7 +487,7 @@
   </head>
   <body>
     <nav aria-label="Main links">
-      <img class="index-image" src="media/index/IMG_9323.jpg" alt="">
+      <img class="index-image" alt="">
     </nav>
     <div class="hello-bubble" id="hello-bubble" hidden></div>
     <div class="guestbook-popup-backdrop" id="guestbook-backdrop" hidden></div>
@@ -500,6 +506,24 @@
     <div class="counter" align="center"><a href="https://www.counter12.com"><img src="https://www.counter12.com/img-Y4454dy930Cd25bW-23.gif" border="0" alt="free counter"></a><script type="text/javascript" src="https://www.counter12.com/ad.js?id=Y4454dy930Cd25bW"></script></div>
 
     <script>
+      const indexImages = [
+        "media/index-jpg/astro.jpg",
+        "media/index-jpg/book.jpg",
+        "media/index-jpg/bridsnest.jpg",
+        "media/index-jpg/brussels.jpg",
+        "media/index-jpg/care.jpg",
+        "media/index-jpg/chair.jpg",
+        "media/index-jpg/cucumber.jpg",
+        "media/index-jpg/golf.jpg",
+        "media/index-jpg/pigeon.jpg",
+        "media/index-jpg/potion.jpg",
+        "media/index-jpg/rubbish.jpg",
+        "media/index-jpg/sculpture.jpg",
+        "media/index-jpg/shelf.jpg",
+        "media/index-jpg/shook.jpg",
+        "media/index-jpg/signs.jpg",
+        "media/index-jpg/trap.jpg"
+      ];
       const links = [
         { text: "hello", href: "pages/blog.html", action: "hello" },
         { text: "livecoding", href: "pages/livecoding.html" },
@@ -519,6 +543,7 @@
       ];
 
       const nav = document.querySelector("nav");
+      const indexImage = document.querySelector(".index-image");
       const helloBubble = document.getElementById("hello-bubble");
       const guestbookPopup = document.getElementById("guestbook-popup");
       const guestbookBackdrop = document.getElementById("guestbook-backdrop");
@@ -551,6 +576,17 @@
       const helloMessage = "Welcome to my Site! There are many things to explore here (atleast if i finally add more content..)";
       let dragState = null;
       let helloTypeTimer = null;
+
+      function setDailyIndexImage() {
+        const today = new Date();
+        const dayNumber = Math.floor(
+          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000
+        );
+        indexImage.addEventListener("load", () => {
+          indexImage.classList.add("is-loaded");
+        }, { once: true });
+        indexImage.src = indexImages[dayNumber % indexImages.length];
+      }
 
       function currentNavMetrics() {
         const navSize = nav.clientWidth;
@@ -706,6 +742,7 @@
         nav.appendChild(a);
       });
 
+      setDailyIndexImage();
       layoutNav();
 
       guestbookClose.addEventListener("click", closeGuestbook);
