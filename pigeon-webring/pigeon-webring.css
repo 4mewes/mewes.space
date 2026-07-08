@@ -1,0 +1,155 @@
+:root {
+  --pigeon-webring-z-index: 2147483000;
+}
+
+.pigeon-webring-info {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: var(--pigeon-webring-z-index);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px;
+  color: #000000;
+  font: 400 13px/1.1 "Times New Roman", Times, serif;
+  letter-spacing: 0;
+  text-align: right;
+  text-transform: lowercase;
+  text-shadow: none;
+  user-select: none;
+}
+
+.pigeon-webring-info__button {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  color: inherit;
+  cursor: pointer;
+  image-rendering: pixelated;
+  text-decoration: none;
+}
+
+.pigeon-webring-info__button:hover,
+.pigeon-webring-info__button:focus-visible {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px #bdbdbd;
+  outline: none;
+}
+
+.pigeon-webring-info__icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.pigeon-webring-info__text {
+  display: block;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pigeon-webring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--pigeon-webring-z-index);
+  width: max-content;
+  min-width: var(--pigeon-webring-sprite-width, 96px);
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+  transform: translate3d(-9999px, -9999px, 0);
+  border: 0;
+  background: transparent;
+  box-sizing: border-box;
+  cursor: url("assets/vista_globe_arrow_cursor_48.png") 21 18, url("assets/vista_globe_arrow_cursor_32.png") 14 12, pointer;
+  pointer-events: auto;
+}
+
+.pigeon-webring__bird {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: auto;
+}
+
+.pigeon-webring__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(240px, calc(100vw - 24px));
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid rgba(16, 24, 40, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 3px 14px rgba(16, 24, 40, 0.16);
+  color: #1f2933;
+  font: 400 13px/1.1 "Times New Roman", Times, serif;
+  letter-spacing: 0;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: url("assets/vista_globe_arrow_cursor_48.png") 21 18, url("assets/vista_globe_arrow_cursor_32.png") 14 12, pointer;
+  pointer-events: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pigeon-webring__link:hover,
+.pigeon-webring__link:focus-visible {
+  background: #ffffff;
+  border-color: rgba(16, 24, 40, 0.32);
+  color: #0f172a;
+  outline: none;
+}
+
+.pigeon-webring__sprite-link {
+  display: block;
+  width: var(--pigeon-webring-sprite-width, 96px);
+  height: var(--pigeon-webring-sprite-height, 72px);
+  cursor: url("assets/vista_globe_arrow_cursor_48.png") 21 18, url("assets/vista_globe_arrow_cursor_32.png") 14 12, pointer;
+  pointer-events: auto;
+}
+
+.pigeon-webring__sprite-link:focus-visible {
+  outline: 1px solid rgba(16, 24, 40, 0.5);
+  outline-offset: 2px;
+}
+
+.pigeon-webring__sprite {
+  display: block;
+  width: var(--pigeon-webring-sprite-width, 96px);
+  height: var(--pigeon-webring-sprite-height, 72px);
+  object-fit: contain;
+  transform: scaleX(var(--pigeon-webring-facing, 1));
+  transform-origin: center bottom;
+  cursor: url("assets/vista_globe_arrow_cursor_48.png") 21 18, url("assets/vista_globe_arrow_cursor_32.png") 14 12, pointer;
+  pointer-events: none;
+}
+
+.pigeon-webring--leaving .pigeon-webring__bird {
+  animation: pigeon-webring-fly-away 900ms ease-in forwards;
+}
+
+@keyframes pigeon-webring-fly-away {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--pigeon-webring-fly-drift, 90px), -180px, 0) rotate(-8deg) scale(0.82);
+  }
+}
