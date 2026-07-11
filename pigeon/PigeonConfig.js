@@ -5,6 +5,9 @@
     WALKING: 'walking',
     PECKING: 'pecking',
     FLYING: 'flying',
+    SPAWNING: 'spawning',
+    LANDING: 'landing',
+    COOLDOWN: 'cooldown',
     PAUSING: 'pausing',
     SHAKING: 'shaking'
   };
@@ -18,7 +21,7 @@
     SPEED: {
       BASE_MIN: 0.3,
       BASE_MAX: 0.7,
-      ESCAPE_MULT: 5,
+      ESCAPE_MULT: 18,
       STALK_MULT: 1,
       RETREAT_MULT_MAX: 4
     },
@@ -43,11 +46,17 @@
       SHAKE_DURATION: 60,
       FLY_MIN: 50,
       FLY_MAX: 80,
+      FLY_START_FRAME_COUNT: 3,
+      // Only the first few in-flight frames loop; later frames stay listed for packaging/source continuity but are too jumpy for the active loop.
+      FLY_LOOP_FRAME_COUNT: 3,
+      LANDING_FRAME_DURATION: 3,
+      RESPAWN_COOLDOWN_MIN: 120,
+      RESPAWN_COOLDOWN_MAX: 300,
       DURATIONS: {
         walking: 6,
         pausing: 30,
         pecking: 8,
-        flying:  3,
+        flying: 7,
         shaking: 2  // Higher framerate (30 fps at 60Hz)
       }
     },
@@ -64,7 +73,10 @@
     },
     PNG_RENDERING: {
       WIDTH: 76,
-      HEIGHT: 57
+      HEIGHT: 57,
+      FLY_WIDTH: 120,
+      FLY_HEIGHT: 120,
+      LANDING_Y_OFFSET: 27
     },
     PNG_ASSETS: {
       walking: [
@@ -86,7 +98,17 @@
         'graphics/normalized/pause1/pause1_0018.png',
       ],
       shaking: [],
-      flying:  []
+      flying: [
+        'graphics/normalized/fly/pigeon-soar_0034.png',
+        'graphics/normalized/fly/pigeon-soar_0047.png',
+        'graphics/normalized/fly/pigeon-soar_0049.png',
+        'graphics/normalized/fly/pigeon-soar_0052.png',
+        'graphics/normalized/fly/pigeon-soar_0053.png',
+        'graphics/normalized/fly/pigeon-soar_0054.png',
+        'graphics/normalized/fly/pigeon-soar_0055.png',
+        'graphics/normalized/fly/pigeon-soar_0056.png',
+        'graphics/normalized/fly/pigeon-soar_0057.png',
+      ]
     }
   };
 
@@ -96,30 +118,4 @@
     }
     return '../media/pigeon/' + path;
   };
-
-  window.PIGEON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 52" width="64" height="52">
-    <ellipse cx="9" cy="30" rx="10" ry="5" fill="#6A6A7A" transform="rotate(-10,9,30)"/>
-    <ellipse cx="32" cy="28" rx="18" ry="12" fill="#919196"/>
-    <ellipse cx="30" cy="27" rx="13" ry="7" fill="#AAAABC" transform="rotate(-3,30,27)"/>
-    <path d="M18 30 Q30 34 42 30" stroke="#6A6A7A" stroke-width="1.5" fill="none"/>
-    <path d="M19 27 Q30 31 41 27" stroke="#6A6A7A" stroke-width="1.5" fill="none"/>
-    <ellipse cx="45" cy="20" rx="8" ry="10" fill="#919196"/>
-    <ellipse cx="46" cy="21" rx="5" ry="6" fill="#6A9A8A" opacity="0.6"/>
-    <circle cx="50" cy="12" r="9" fill="#919196"/>
-    <path d="M58 10 L64 11.5 L58 13 Z" fill="#BFA060"/>
-    <ellipse cx="59" cy="10" rx="3" ry="1.5" fill="#D8C080"/>
-    <circle cx="55" cy="10" r="4" fill="#FF9500"/>
-    <circle cx="55" cy="10" r="2.2" fill="#111"/>
-    <circle cx="54" cy="9" r="0.8" fill="white"/>
-    <g stroke="#BF8A28" stroke-width="2" stroke-linecap="round" fill="none">
-      <line x1="34" y1="39" x2="31" y2="47"/>
-      <line x1="31" y1="47" x2="25" y2="49"/>
-      <line x1="31" y1="47" x2="31" y2="50"/>
-      <line x1="31" y1="47" x2="35" y2="49"/>
-      <line x1="40" y1="39" x2="38" y2="47"/>
-      <line x1="38" y1="47" x2="32" y2="49"/>
-      <line x1="38" y1="47" x2="38" y2="50"/>
-      <line x1="38" y1="47" x2="42" y2="49"/>
-    </g>
-  </svg>`;
 })();

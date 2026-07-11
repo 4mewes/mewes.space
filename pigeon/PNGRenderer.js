@@ -21,6 +21,7 @@
       this.peckPhase = 'start';
       this.peckLoopWait = 0;
       this.pauseFrameWait = 0;
+      this.flyingDirection = 1;
       this.stateTimer = 0;
       this.stateTimerLimit = 0;
     }
@@ -58,6 +59,8 @@
           width: 100%;
           height: 100%;
           display: block;
+          object-fit: contain;
+          object-position: center bottom;
         }
       `;
       (document.head || document.documentElement).appendChild(style);
@@ -106,18 +109,62 @@
           this.peckLoopWait = 0;
         } else if (state === 'pausing') {
           this.pauseFrameWait = 0;
+        } else if (state === 'flying') {
+          this.flyingDirection = 1;
+        } else if (state === 'spawning') {
+          const frames = this._getFramesForState(state) || [];
+          this.currentFrameIndex = this._getFlyingLoopStartIndex(frames.length);
+          this.flyingDirection = 1;
+        } else if (state === 'landing') {
+          this.currentFrameIndex = this._getLandingStartIndex();
         }
         this._updateSprite();
       }
 
-      const scaleX = (state === 'pecking') ? faceDir : -faceDir;
-      this.container.style.transform = `translate3d(${Math.round(x)}px, ${-Math.round(y)}px, 0) scaleX(${scaleX})`;
+      const isHidden = state === 'cooldown';
+      this.container.style.setProperty('visibility', isHidden ? 'hidden' : 'visible', 'important');
+      if (isHidden) return;
+
+      this._applyStateDimensions(state);
+
+      const scaleX = (state === 'pecking' || state === 'flying' || state === 'spawning' || state === 'landing') ? faceDir : -faceDir;
+      const renderOffset = this._getRenderOffset(state);
+      const renderX = x + renderOffset.x;
+      const renderY = -y + renderOffset.y;
+      this.container.style.transform = `translate3d(${Math.round(renderX)}px, ${Math.round(renderY)}px, 0) scaleX(${scaleX})`;
 
       this._animate(dt, currentSpeed);
     }
 
+    _applyStateDimensions(state) {
+      const pngRendering = window.PIGEON_CONFIG.PNG_RENDERING || {};
+      const usesFlyingSize = state === 'flying' || state === 'spawning' || state === 'landing';
+      const width = usesFlyingSize
+        ? (pngRendering.FLY_WIDTH || pngRendering.WIDTH)
+        : pngRendering.WIDTH;
+      const height = usesFlyingSize
+        ? (pngRendering.FLY_HEIGHT || pngRendering.HEIGHT)
+        : pngRendering.HEIGHT;
+
+      if (width) this.container.style.width = `${width}px`;
+      if (height) this.container.style.height = `${height}px`;
+    }
+
+    _getRenderOffset(state) {
+      if (state !== 'landing') return { x: 0, y: 0 };
+
+      const pngRendering = window.PIGEON_CONFIG.PNG_RENDERING || {};
+      const walkWidth = pngRendering.WIDTH || window.PIGEON_CONFIG.DIMENSIONS.WIDTH;
+      const flyWidth = pngRendering.FLY_WIDTH || walkWidth;
+
+      return {
+        x: (walkWidth - flyWidth) / 2,
+        y: pngRendering.LANDING_Y_OFFSET || 0
+      };
+    }
+
     _animate(dt, speed) {
-      const frameSpeed = this.currentState === 'pausing' ? 1 : speed;
+      const frameSpeed = (this.currentState === 'pausing' || this._usesFlyingAnimation(this.currentState)) ? 1 : speed;
       this.frameTimer += dt * frameSpeed;
       const threshold = this._getFrameThreshold();
 
@@ -125,8 +172,12 @@
         this.frameTimer = 0;
         if (this.currentState === 'pecking') {
           this._advancePeckFrame();
+        } else if (this.currentState === 'flying' || this.currentState === 'spawning') {
+          this._advanceFlyingFrame();
+        } else if (this.currentState === 'landing') {
+          this._advanceLandingFrame();
         } else {
-          const frames = this.preloadedFrames[this.currentState] || this.preloadedFrames['walking'];
+          const frames = this._getFramesForState(this.currentState) || this.preloadedFrames['walking'];
           if (frames.length > 1) {
             this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;
             if (this.currentState === 'pausing') {
@@ -136,6 +187,73 @@
         }
         this._updateSprite();
       }
+    }
+
+    _usesFlyingAnimation(state) {
+      return state === 'flying' || state === 'spawning' || state === 'landing';
+    }
+
+    _getAssetState(state) {
+      return this._usesFlyingAnimation(state) ? 'flying' : state;
+    }
+
+    _getFramesForState(state) {
+      return this.preloadedFrames[this._getAssetState(state)];
+    }
+
+    _advanceFlyingFrame() {
+      const frames = this._getFramesForState(this.currentState) || [];
+      if (frames.length <= 1) return;
+
+      const loopStartIndex = this._getFlyingLoopStartIndex(frames.length);
+      const loopEndIndex = this._getFlyingLoopEndIndex(frames.length);
+      if (this.currentFrameIndex < loopStartIndex) {
+        this.currentFrameIndex = this.currentState === 'spawning'
+          ? loopStartIndex
+          : this.currentFrameIndex + 1;
+        this.flyingDirection = 1;
+        return;
+      }
+
+      this.currentFrameIndex += this.flyingDirection;
+      if (this.currentFrameIndex > loopEndIndex) {
+        this.flyingDirection = -1;
+        this.currentFrameIndex = Math.max(loopStartIndex, loopEndIndex - 1);
+      } else if (this.currentFrameIndex < loopStartIndex) {
+        this.flyingDirection = 1;
+        this.currentFrameIndex = Math.min(frames.length - 1, loopStartIndex + 1);
+      }
+    }
+
+    _advanceLandingFrame() {
+      if (this.currentFrameIndex > 0) {
+        this.currentFrameIndex -= 1;
+      }
+    }
+
+    _getLandingStartIndex() {
+      const frames = this._getFramesForState('landing') || [];
+      return Math.max(0, this._getFlyingLoopStartIndex(frames.length) - 1);
+    }
+
+    _getFlyingLoopStartIndex(frameCount) {
+      const configuredStartCount = window.PIGEON_CONFIG.ANIMATION.FLY_START_FRAME_COUNT || 0;
+      return Math.max(0, Math.min(configuredStartCount, frameCount - 1));
+    }
+
+    _getFlyingLoopEndIndex(frameCount) {
+      const { ANIMATION } = window.PIGEON_CONFIG;
+      const loopStartIndex = this._getFlyingLoopStartIndex(frameCount);
+      const configuredLoopFrameCount = ANIMATION.FLY_LOOP_FRAME_COUNT || 0;
+
+      if (configuredLoopFrameCount <= 0) {
+        return frameCount - 1;
+      }
+
+      return Math.max(
+        loopStartIndex,
+        Math.min(frameCount - 1, loopStartIndex + configuredLoopFrameCount - 1)
+      );
     }
 
     _getFrameThreshold() {
@@ -152,7 +270,12 @@
         return this.pauseFrameWait;
       }
 
-      return ANIMATION.DURATIONS[this.currentState] || 6;
+      if (this.currentState === 'landing') {
+        return ANIMATION.LANDING_FRAME_DURATION || ANIMATION.DURATIONS.flying || 6;
+      }
+
+      const durationState = this._usesFlyingAnimation(this.currentState) ? 'flying' : this.currentState;
+      return ANIMATION.DURATIONS[durationState] || 6;
     }
 
     _advancePeckFrame() {
@@ -235,7 +358,7 @@
     }
 
     _updateSprite() {
-      const activeFrames = this.preloadedFrames[this.currentState] || this.preloadedFrames['walking'];
+      const activeFrames = this._getFramesForState(this.currentState) || this.preloadedFrames['walking'];
 
       if (activeFrames && activeFrames[this.currentFrameIndex]) {
         const nextSrc = activeFrames[this.currentFrameIndex];

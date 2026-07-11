@@ -7,7 +7,7 @@
    */
   class Pigeon {
     constructor(
-      renderer = new window.SVGRenderer(),
+      renderer = new window.PNGRenderer(),
       config = window.PIGEON_CONFIG,
       inputTracker = window.MouseTracker,
       states = window.PIGEON_STATES,
@@ -45,8 +45,9 @@
       this.isSeekingCrumb = false;
       this.crumbTargetId = null;
       this.eatingCrumbId = null;
+      this.spawnTarget = null;
 
-      this.setRandomDirection();
+      this._beginSpawnFlight();
     }
 
     /**
@@ -64,6 +65,11 @@
      * Analyzes environment (mouse distance) and sets movement intent
      */
     _processInput(dt) {
+      if (this.state === this.states.SPAWNING || this.state === this.states.LANDING || this.state === this.states.COOLDOWN) {
+        this._clearCrumbIntent();
+        return;
+      }
+
       const { ZONES, SPEED, DIMENSIONS } = this.config;
       const mouse = this.inputTracker.getPosition();
       this.isSeekingCrumb = false;
@@ -82,7 +88,7 @@
       if (dist < ZONES.ESCAPE && this.state !== this.states.FLYING) {
         this._clearCrumbIntent();
         this.transitionTo(this.states.FLYING);
-        this._pickEscapeDir(dx, dy, dist);
+        this._pickFlyAwayDir(dx);
         return;
       }
 
@@ -134,7 +140,7 @@
     }
 
     _processBreadCrumbs() {
-      if (!this.breadCrumbs || this.state === this.states.FLYING) return;
+      if (!this.breadCrumbs || this.state === this.states.FLYING || this.state === this.states.SPAWNING || this.state === this.states.LANDING || this.state === this.states.COOLDOWN) return;
       if (this.state === this.states.PECKING || this.state === this.states.PAUSING || this.state === this.states.SHAKING) return;
 
       const { ATTRACTION_RADIUS, EAT_RADIUS } = this.config.BREAD_CRUMBS;
@@ -214,6 +220,74 @@
       this.velY = Math.sin(finalAngle);
     }
 
+    _pickFlyAwayDir(dx) {
+      const renderWidth = (this.config.PNG_RENDERING && this.config.PNG_RENDERING.FLY_WIDTH) || this.config.DIMENSIONS.WIDTH;
+      const pigeonCenterX = this.x + renderWidth / 2;
+      const horizontal = dx === 0
+        ? (pigeonCenterX < window.innerWidth / 2 ? -1 : 1)
+        : (dx > 0 ? 1 : -1);
+      const climb = 0.75;
+      const length = Math.sqrt(horizontal * horizontal + climb * climb);
+
+      this.velX = horizontal / length;
+      this.velY = climb / length;
+      this.faceDir = horizontal;
+    }
+
+    _beginSpawnFlight() {
+      const { DIMENSIONS, PNG_RENDERING } = this.config;
+      const flyWidth = (PNG_RENDERING && PNG_RENDERING.FLY_WIDTH) || DIMENSIONS.WIDTH;
+      const flyHeight = (PNG_RENDERING && PNG_RENDERING.FLY_HEIGHT) || DIMENSIONS.HEIGHT;
+      const walkWidth = (PNG_RENDERING && PNG_RENDERING.WIDTH) || DIMENSIONS.WIDTH;
+      const maxX = Math.max(0, window.innerWidth - DIMENSIONS.RESERVE_X);
+      const maxY = Math.max(0, window.innerHeight - DIMENSIONS.RESERVE_Y);
+      const maxSpawnY = Math.max(0, Math.min(maxY, window.innerHeight * 0.5));
+      const targetX = Math.random() * maxX;
+      const targetY = Math.random() * maxSpawnY;
+      const targetCenterX = targetX + walkWidth / 2;
+      const fromLeft = targetCenterX <= window.innerWidth / 2;
+
+      this.spawnTarget = { x: targetX, y: targetY };
+      this.x = fromLeft ? -flyWidth : window.innerWidth + flyWidth;
+      this.y = Math.min(maxY, Math.max(targetY + flyHeight, window.innerHeight * (0.55 + Math.random() * 0.25)));
+      this.currentSpeedMult = 1;
+      this.retreatBias = 0;
+      this.inputTimer = 0;
+      this.isSeekingCrumb = false;
+      this._clearCrumbIntent();
+      this.transitionTo(this.states.SPAWNING);
+      this._pointTowardSpawnTarget();
+    }
+
+    _beginRespawnCooldown() {
+      this.spawnTarget = null;
+      this.velX = 0;
+      this.velY = 0;
+      this.currentSpeedMult = 1;
+      this.retreatBias = 0;
+      this.inputTimer = 0;
+      this.isSeekingCrumb = false;
+      this._clearCrumbIntent();
+      this.transitionTo(this.states.COOLDOWN);
+    }
+
+    _pointTowardSpawnTarget() {
+      if (!this.spawnTarget) return;
+
+      const dx = this.spawnTarget.x - this.x;
+      const dy = this.spawnTarget.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist === 0) {
+        this.velX = 0;
+        this.velY = 0;
+        return;
+      }
+
+      this.velX = dx / dist;
+      this.velY = dy / dist;
+      this.faceDir = this.velX > 0 ? 1 : -1;
+    }
+
     /**
      * Formal state transition with side effects
      */
@@ -228,6 +302,14 @@
       const { ANIMATION } = this.config;
       if (newState === this.states.FLYING) {
         this.timerLimit = ANIMATION.FLY_MIN + Math.random() * (ANIMATION.FLY_MAX - ANIMATION.FLY_MIN);
+      } else if (newState === this.states.LANDING) {
+        const startFrames = ANIMATION.FLY_START_FRAME_COUNT || 3;
+        const frameDuration = ANIMATION.LANDING_FRAME_DURATION || (ANIMATION.DURATIONS && ANIMATION.DURATIONS.flying) || 3;
+        this.timerLimit = startFrames * frameDuration;
+      } else if (newState === this.states.COOLDOWN) {
+        const min = ANIMATION.RESPAWN_COOLDOWN_MIN || 120;
+        const max = Math.max(min, ANIMATION.RESPAWN_COOLDOWN_MAX || min);
+        this.timerLimit = min + Math.random() * (max - min);
       } else if (newState === this.states.PECKING) {
         this.timerLimit = ANIMATION.PECK_DURATION;
       } else if (newState === this.states.PAUSING) {
@@ -244,9 +326,28 @@
       this.timer += dt;
 
       // Non-walking states are purely time-locked
+      if (this.state === this.states.COOLDOWN) {
+        if (this.timer >= this.timerLimit) {
+          this._beginSpawnFlight();
+        }
+        return;
+      }
+
+      if (this.state === this.states.FLYING || this.state === this.states.SPAWNING) {
+        return;
+      }
+
       if (this.state !== this.states.WALKING) {
         if (this.timer >= this.timerLimit) {
+          const wasLanding = this.state === this.states.LANDING;
+          if (this.state === this.states.LANDING) {
+            this.spawnTarget = null;
+          }
           this.transitionTo(this.states.WALKING);
+          if (wasLanding) {
+            this.setGroundDirection();
+            this.nextDecision = this._getRandomDecisionTime();
+          }
         }
         return;
       }
@@ -299,19 +400,87 @@
      * Core physics integration
      */
     _applyPhysics(dt) {
-      if (this.state === this.states.PECKING || this.state === this.states.PAUSING || this.state === this.states.SHAKING) return;
+      if (this.state === this.states.PECKING || this.state === this.states.PAUSING || this.state === this.states.SHAKING || this.state === this.states.LANDING || this.state === this.states.COOLDOWN) return;
 
       const isFlying = this.state === this.states.FLYING;
-      const speed = this.baseSpeed * (isFlying ? this.config.SPEED.ESCAPE_MULT : this.currentSpeedMult);
+      const isSpawning = this.state === this.states.SPAWNING;
+      if (isFlying && this._isInFlyStartAnimation()) return;
+
+      const speed = this.baseSpeed * ((isFlying || isSpawning) ? this.config.SPEED.ESCAPE_MULT : this.currentSpeedMult);
+
+      if (isSpawning) {
+        this._moveTowardSpawnTarget(speed * dt);
+        return;
+      }
       
       this.x += this.velX * speed * dt;
       this.y += this.velY * speed * dt;
 
-      this._handleBoundaries();
+      if (isFlying) {
+        this._handleFlightExit();
+      } else {
+        this._handleBoundaries();
+      }
 
       if (this.velX !== 0) {
         this.faceDir = this.velX > 0 ? 1 : -1;
       }
+    }
+
+    _moveTowardSpawnTarget(step) {
+      if (!this.spawnTarget) {
+        this.transitionTo(this.states.WALKING);
+        return;
+      }
+
+      const dx = this.spawnTarget.x - this.x;
+      const dy = this.spawnTarget.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= Math.max(step, 2)) {
+        this.x = this.spawnTarget.x;
+        this.y = this.spawnTarget.y;
+        this.velX = 0;
+        this.velY = 0;
+        this.transitionTo(this.states.LANDING);
+        return;
+      }
+
+      this.velX = dx / dist;
+      this.velY = dy / dist;
+      this.faceDir = this.velX > 0 ? 1 : -1;
+      this.x += this.velX * step;
+      this.y += this.velY * step;
+    }
+
+    _isInFlyStartAnimation() {
+      const { ANIMATION } = this.config;
+      const startFrames = ANIMATION.FLY_START_FRAME_COUNT || 0;
+      const frameDuration = (ANIMATION.DURATIONS && ANIMATION.DURATIONS.flying) || 3;
+      return this.timer < startFrames * frameDuration;
+    }
+
+    _handleFlightExit() {
+      const flyWidth = (this.config.PNG_RENDERING && this.config.PNG_RENDERING.FLY_WIDTH) || this.config.DIMENSIONS.WIDTH;
+      const flyHeight = (this.config.PNG_RENDERING && this.config.PNG_RENDERING.FLY_HEIGHT) || this.config.DIMENSIONS.HEIGHT;
+      const offscreenX = this.x < -flyWidth || this.x > window.innerWidth + flyWidth;
+      const offscreenY = this.y > window.innerHeight + flyHeight;
+
+      if (offscreenX || offscreenY) {
+        this._beginRespawnCooldown();
+      }
+    }
+
+    _resetAfterFlight() {
+      const { RESERVE_X } = this.config.DIMENSIONS;
+      const maxX = Math.max(0, window.innerWidth - RESERVE_X);
+
+      this.x = Math.random() * maxX;
+      this.y = 0;
+      this.currentSpeedMult = 1;
+      this.retreatBias = 0;
+      this._clearCrumbIntent();
+      this.transitionTo(this.states.WALKING);
+      this.setRandomDirection();
     }
 
     _handleBoundaries() {
@@ -330,6 +499,15 @@
       this.velX = Math.cos(angle);
       this.velY = Math.sin(angle);
       this.retreatBias = 0; 
+    }
+
+    setGroundDirection() {
+      const direction = this.faceDir || (Math.random() < 0.5 ? 1 : -1);
+      const verticalJitter = (Math.random() - 0.5) * 0.35;
+
+      this.velX = direction;
+      this.velY = verticalJitter;
+      this.retreatBias = 0;
     }
 
     _getRandomDecisionTime() {
