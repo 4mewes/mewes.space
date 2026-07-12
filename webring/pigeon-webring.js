@@ -16,6 +16,12 @@
     sitesEndpoint: "",
     heartbeatEndpoint: "https://jhufnopbeulclqelxgyo.supabase.co/functions/v1/heartbeat",
     assetBase: "assets/",
+    initialDelayMinMs: 10000,
+    initialDelayMaxMs: 30000,
+    walkDurationMinMs: 20000,
+    walkDurationMaxMs: 40000,
+    respawnDelayMinMs: 30000,
+    respawnDelayMaxMs: 60000,
     intervalMs: 60000,
     initialDelayMs: 60000,
     durationMs: 15000,
@@ -47,7 +53,7 @@
     pauseFrameMs: 650,
     spriteWidth: 96,
     spriteHeight: 72,
-    infoHref: "/pages/webring.html",
+    infoHref: "https://mewes-space.xyz/pages/webring",
     infoIcon: "app-icon-image.png",
     infoLabel: "Web Pigeons",
     infoText: "I am a web pigeon",
@@ -438,7 +444,7 @@
   function start() {
     if (state.running) return;
     state.running = true;
-    scheduleNext(config.initialDelayMs);
+    scheduleNext(getInitialDelayMs());
   }
 
   function stop() {
@@ -462,17 +468,24 @@
     }
 
     state.timerId = window.setTimeout(function () {
+      state.timerId = null;
       maybeSpawn();
-      scheduleNext(config.intervalMs);
     }, Math.max(0, delayMs));
   }
 
   function maybeSpawn() {
-    if (!state.running || state.activePigeon) return;
-    if (document.hidden) return;
-    if (Math.random() > config.spawnChance) return;
+    var pigeon;
 
-    spawn();
+    if (!state.running || state.activePigeon) return;
+    if (document.hidden || Math.random() > config.spawnChance) {
+      scheduleNext(getRespawnDelayMs());
+      return;
+    }
+
+    pigeon = spawn();
+    if (!pigeon) {
+      scheduleNext(getRespawnDelayMs());
+    }
   }
 
   function spawn() {
@@ -483,8 +496,49 @@
 
     state.activePigeon = new PigeonWebringPigeon(target, function () {
       state.activePigeon = null;
+      if (state.running) {
+        scheduleNext(getRespawnDelayMs());
+      }
     });
     return state.activePigeon;
+  }
+
+  function getInitialDelayMs() {
+    return getTimingRange("initialDelayMinMs", "initialDelayMaxMs", "initialDelayMs");
+  }
+
+  function getWalkDurationMs() {
+    return getTimingRange("walkDurationMinMs", "walkDurationMaxMs", "durationMs");
+  }
+
+  function getRespawnDelayMs() {
+    return getTimingRange("respawnDelayMinMs", "respawnDelayMaxMs", "intervalMs");
+  }
+
+  function getTimingRange(minKey, maxKey, legacyKey) {
+    var hasMin = hasOwn(existingConfig, minKey);
+    var hasMax = hasOwn(existingConfig, maxKey);
+    var hasLegacy = legacyKey && hasOwn(existingConfig, legacyKey);
+    var fallback = getNumber(config[legacyKey], 0);
+    var min;
+    var max;
+
+    if (!hasMin && !hasMax && hasLegacy) {
+      return Math.max(0, fallback);
+    }
+
+    min = getNumber(config[minKey], fallback);
+    max = getNumber(config[maxKey], min);
+    return randomBetween(Math.max(0, min), Math.max(0, max));
+  }
+
+  function hasOwn(object, key) {
+    return Object.prototype.hasOwnProperty.call(object || {}, key);
+  }
+
+  function getNumber(value, fallback) {
+    var number = Number(value);
+    return isFinite(number) ? number : fallback;
   }
 
   function PigeonWebringPigeon(target, onDestroy) {
@@ -497,6 +551,7 @@
     this.lastFrameAt = 0;
     this.lastTickAt = 0;
     this.startedAt = 0;
+    this.walkDurationMs = getWalkDurationMs();
     this.leaving = false;
     this.mode = "walking";
     this.rafId = 0;
@@ -667,7 +722,7 @@
       this.resumeAfterHoverStop(now);
     }
 
-    if (!this.leaving && now - this.startedAt >= config.durationMs) {
+    if (!this.leaving && now - this.startedAt >= this.walkDurationMs) {
       this.beginLeaving(now);
     }
 
