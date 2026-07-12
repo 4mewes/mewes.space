@@ -13,6 +13,8 @@
   var defaults = {
     cssHref: "pigeon-webring.css",
     sitesScript: "pigeon-sites.js",
+    sitesEndpoint: "",
+    heartbeatEndpoint: "https://jhufnopbeulclqelxgyo.supabase.co/functions/v1/heartbeat",
     assetBase: "assets/",
     intervalMs: 60000,
     initialDelayMs: 60000,
@@ -20,6 +22,17 @@
     spawnChance: 1,
     speedPxPerSecond: 58,
     frameMs: 115,
+    flyFrameMs: 115,
+    landingFrameMs: 50,
+    flyStartFrameCount: 3,
+    flyLoopFrameCount: 3,
+    flySpeedPxPerSecond: 500,
+    flySpriteWidth: 120,
+    flySpriteHeight: 120,
+    landingYOffset: 27,
+    landingFinishOffsetX: null,
+    landingFinishOffsetY: 0,
+    flightEdgePadding: 140,
     hoverStopRadius: 64,
     hoverIdleFrameMs: 850,
     hoverIdleSwitchMinMs: 1400,
@@ -34,13 +47,15 @@
     pauseFrameMs: 650,
     spriteWidth: 96,
     spriteHeight: 72,
-    infoHref: "pigeon-info.html",
+    infoHref: "/pages/webring.html",
     infoIcon: "app-icon-image.png",
     infoLabel: "Web Pigeons",
     infoText: "I am a web pigeon",
+    showInfoLink: true,
     linkPrefix: "",
     linkTarget: "_blank",
     linkRel: "noopener noreferrer",
+    linkEnabled: true,
     frames: [
       "walk1_0003.png",
       "walk1_0007.png",
@@ -64,13 +79,26 @@
     pauseFrames: [
       "pause1_0017.png",
       "pause1_0018.png"
+    ],
+    flyFrames: [
+      "pigeon-soar_0034.png",
+      "pigeon-soar_0047.png",
+      "pigeon-soar_0049.png",
+      "pigeon-soar_0052.png",
+      "pigeon-soar_0053.png",
+      "pigeon-soar_0054.png",
+      "pigeon-soar_0055.png",
+      "pigeon-soar_0056.png",
+      "pigeon-soar_0057.png"
     ]
   };
 
   var NATIVE_FACING = {
     walking: -1,
     pausing: -1,
-    pecking: 1
+    pecking: 1,
+    landing: 1,
+    flying: 1
   };
 
   var config = assign(assign({}, defaults), existingConfig);
@@ -79,6 +107,7 @@
     frameUrls: [],
     peckFrameUrls: [],
     pauseFrameUrls: [],
+    flyFrameUrls: [],
     initialized: false,
     pointer: {
       active: false,
@@ -160,15 +189,95 @@
       return;
     }
 
+    var sitesEndpoint = getSitesEndpoint();
+    if (sitesEndpoint) {
+      loadSitesEndpoint(sitesEndpoint, callback);
+      return;
+    }
+
     if (Array.isArray(window.PigeonWebringSites)) {
       callback(window.PigeonWebringSites);
       return;
     }
 
+    loadSitesScriptFallback(callback);
+  }
+
+  function getSitesEndpoint() {
+    var configuredEndpoint = typeof config.sitesEndpoint === "string" ? config.sitesEndpoint.trim() : "";
+    var scriptEndpoint = typeof window.PigeonWebringSitesEndpoint === "string" ? window.PigeonWebringSitesEndpoint.trim() : "";
+
+    return configuredEndpoint || scriptEndpoint;
+  }
+
+  function loadSitesEndpoint(endpoint, callback) {
+    if (typeof window.fetch !== "function") {
+      loadSitesScriptFallback(callback);
+      return;
+    }
+
+    window.fetch(resolveUrl(endpoint), {
+      method: "GET",
+      credentials: "omit",
+      cache: "no-store"
+    })
+      .then(function (response) {
+        if (!response.ok) throw new Error("Pigeon Webring sites request failed");
+        return response.json();
+      })
+      .then(function (data) {
+        callback(parseSitesEndpointResponse(data));
+      })
+      .catch(function () {
+        if (config.sitesScript) {
+          loadSitesScriptFallback(callback);
+          return;
+        }
+
+        callback([]);
+      });
+  }
+
+  function parseSitesEndpointResponse(data) {
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.urls)) return data.urls;
+    if (data && Array.isArray(data.sites)) return data.sites;
+    return [];
+  }
+
+  function sendHeartbeat() {
+    var endpoint = typeof config.heartbeatEndpoint === "string" ? config.heartbeatEndpoint.trim() : "";
+    var protocol = window.location.protocol;
+
+    if (!endpoint || typeof window.fetch !== "function") return;
+    if (protocol !== "http:" && protocol !== "https:") return;
+
+    window.fetch(resolveUrl(endpoint), {
+      method: "POST",
+      credentials: "omit",
+      cache: "no-store",
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        url: window.location.origin,
+        href: window.location.href
+      })
+    }).catch(function () {});
+  }
+
+  function loadSitesScriptFallback(callback) {
     var script = document.createElement("script");
     script.src = resolveUrl(config.sitesScript);
     script.async = true;
     script.onload = function () {
+      var sitesEndpoint = getSitesEndpoint();
+      if (sitesEndpoint) {
+        loadSitesEndpoint(sitesEndpoint, callback);
+        return;
+      }
+
       callback(Array.isArray(window.PigeonWebringSites) ? window.PigeonWebringSites : []);
     };
     script.onerror = function () {
@@ -182,12 +291,16 @@
     state.initialized = true;
 
     loadStylesheet();
-    createInfoLink();
+    if (config.showInfoLink !== false) {
+      createInfoLink();
+    }
     installPointerTracking();
+    sendHeartbeat();
     state.frameUrls = config.frames.map(resolveAsset);
     state.peckFrameUrls = config.peckFrames.map(resolveAsset);
     state.pauseFrameUrls = config.pauseFrames.map(resolveAsset);
-    preloadFrames(state.frameUrls.concat(state.peckFrameUrls).concat(state.pauseFrameUrls));
+    state.flyFrameUrls = config.flyFrames.map(resolveAsset);
+    preloadFrames(state.frameUrls.concat(state.peckFrameUrls).concat(state.pauseFrameUrls).concat(state.flyFrameUrls));
 
     loadSites(function (sites) {
       state.sites = normalizeSites(sites);
@@ -394,6 +507,17 @@
     this.nextDecisionAt = 0;
     this.peckUntilAt = 0;
     this.pauseUntilAt = 0;
+    this.landingFrameUrls = [];
+    this.landingPhase = "";
+    this.landingTargetX = 0;
+    this.landingTargetY = 0;
+    this.landingStartY = 0;
+    this.flightTargetX = 0;
+    this.flightTargetY = 0;
+    this.flightVelX = 0;
+    this.flightVelY = 0;
+    this.flightLoopDirection = 1;
+    this.flightMoving = false;
     this.hoverStoppedAt = 0;
     this.hoverFrameIndex = 0;
     this.hoverFrameUrls = null;
@@ -407,37 +531,45 @@
     this.createDom();
     this.pickStart();
     this.tick = this.tick.bind(this);
-    this.startedAt = performance.now();
-    this.lastTickAt = this.startedAt;
-    this.lastFrameAt = this.startedAt;
+    var now = performance.now();
+    this.startedAt = now;
+    this.lastTickAt = now;
+    this.lastFrameAt = now;
+    this.beginLanding(now);
     this.rafId = window.requestAnimationFrame(this.tick);
   }
 
   PigeonWebringPigeon.prototype.createDom = function () {
     var el = document.createElement("div");
     var bird = document.createElement("div");
-    var link = document.createElement("a");
-    var spriteLink = document.createElement("a");
+    var linksEnabled = config.linkEnabled !== false;
+    var link = document.createElement(linksEnabled ? "a" : "span");
+    var spriteLink = document.createElement(linksEnabled ? "a" : "span");
     var img = document.createElement("img");
 
-    el.className = "pigeon-webring";
+    el.className = linksEnabled ? "pigeon-webring" : "pigeon-webring pigeon-webring--no-link";
     el.style.setProperty("--pigeon-webring-sprite-width", config.spriteWidth + "px");
     el.style.setProperty("--pigeon-webring-sprite-height", config.spriteHeight + "px");
-    el.style.setProperty("--pigeon-webring-fly-drift", (Math.random() < 0.5 ? -90 : 90) + "px");
 
     bird.className = "pigeon-webring__bird";
 
     link.className = "pigeon-webring__link";
-    link.href = this.target.url;
-    link.target = config.linkTarget;
-    link.rel = config.linkRel;
     link.textContent = config.linkPrefix ? config.linkPrefix + " " + this.target.label : this.target.label;
 
     spriteLink.className = "pigeon-webring__sprite-link";
-    spriteLink.href = this.target.url;
-    spriteLink.target = config.linkTarget;
-    spriteLink.rel = config.linkRel;
     spriteLink.setAttribute("aria-label", this.target.label);
+
+    if (linksEnabled) {
+      link.href = this.target.url;
+      link.target = config.linkTarget;
+      link.rel = config.linkRel;
+      spriteLink.href = this.target.url;
+      spriteLink.target = config.linkTarget;
+      spriteLink.rel = config.linkRel;
+    } else {
+      link.style.cursor = "default";
+      spriteLink.style.cursor = "default";
+    }
 
     img.className = "pigeon-webring__sprite";
     img.src = state.frameUrls[0];
@@ -460,21 +592,11 @@
     var rect = this.getRect();
     var maxX = Math.max(0, window.innerWidth - rect.width - 12);
     var maxY = Math.max(0, window.innerHeight - rect.height - 12);
-    var side = Math.floor(Math.random() * 3);
+    var minY = Math.min(maxY, Math.max(12, window.innerHeight * 0.5));
 
-    if (side === 0) {
-      this.x = 12;
-      this.y = randomBetween(window.innerHeight * 0.35, maxY);
-      this.pickDirection("right");
-    } else if (side === 1) {
-      this.x = maxX;
-      this.y = randomBetween(window.innerHeight * 0.35, maxY);
-      this.pickDirection("left");
-    } else {
-      this.x = randomBetween(12, maxX);
-      this.y = maxY;
-      this.pickDirection();
-    }
+    this.x = randomBetween(12, maxX);
+    this.y = randomBetween(minY, maxY);
+    this.pickDirection();
 
     this.applyPosition();
   };
@@ -495,6 +617,15 @@
     this.nextDecisionAt = performance.now() + randomBetween(1200, 2800);
   };
 
+  PigeonWebringPigeon.prototype.setGroundDirection = function (now) {
+    var direction = this.visualFacingDir || (Math.random() < 0.5 ? 1 : -1);
+
+    this.vx = direction;
+    this.vy = (Math.random() - 0.5) * 0.35;
+    this.syncFacingWithVelocity();
+    this.nextDecisionAt = now + randomBetween(1200, 2800);
+  };
+
   PigeonWebringPigeon.prototype.syncFacingWithVelocity = function () {
     if (Math.abs(this.vx) < 0.001) return;
     this.visualFacingDir = this.vx >= 0 ? 1 : -1;
@@ -512,6 +643,17 @@
     var dt = Math.min(64, now - this.lastTickAt) / 1000;
     this.lastTickAt = now;
 
+    if (this.mode === "landing") {
+      this.updateLanding(now, dt);
+      this.rafId = window.requestAnimationFrame(this.tick);
+      return;
+    }
+
+    if (this.mode === "flying") {
+      this.updateFlying(now, dt);
+      return;
+    }
+
     if (!this.leaving && this.isPointerClose()) {
       if (!this.hoverStoppedAt) {
         this.beginHoverIdle(now);
@@ -526,7 +668,7 @@
     }
 
     if (!this.leaving && now - this.startedAt >= config.durationMs) {
-      this.beginLeaving();
+      this.beginLeaving(now);
     }
 
     if (!this.leaving && this.mode === "pecking") {
@@ -620,6 +762,92 @@
     this.img.src = state.frameUrls[this.frameIndex % state.frameUrls.length];
   };
 
+  PigeonWebringPigeon.prototype.beginLanding = function (now) {
+    if (!state.flyFrameUrls.length) {
+      this.resumeWalking(now);
+      return;
+    }
+
+    this.mode = "landing";
+    this.leaving = false;
+    this.landingTargetX = this.x;
+    this.landingTargetY = this.y;
+    this.landingPhase = "approach";
+    this.landingFrameUrls = [];
+    this.flightLoopDirection = 1;
+    this.flightMoving = true;
+    this.lastFrameAt = now;
+
+    var landingStart = this.getLandingStartPoint();
+    var loopBounds = this.getFlyLoopBounds();
+    this.x = landingStart.x;
+    this.y = landingStart.y;
+    this.setFlightVector(this.landingTargetX, this.landingTargetY);
+    this.setFlyFrame(loopBounds.start);
+    this.applyPosition();
+  };
+
+  PigeonWebringPigeon.prototype.updateLanding = function (now, dt) {
+    if (this.landingPhase === "finish") {
+      this.updateLandingFinish(now);
+      return;
+    }
+
+    this.x += this.flightVelX * config.flySpeedPxPerSecond * dt;
+    this.y += this.flightVelY * config.flySpeedPxPerSecond * dt;
+
+    if (this.hasReachedPoint(this.landingTargetX, this.landingTargetY)) {
+      this.x = this.landingTargetX;
+      this.y = this.landingTargetY;
+      this.beginLandingFinish(now);
+      return;
+    }
+
+    if (now - this.lastFrameAt >= config.flyFrameMs) {
+      this.lastFrameAt = now;
+      this.advanceFlyLoopFrame();
+    }
+
+    this.applyPosition();
+  };
+
+  PigeonWebringPigeon.prototype.beginLandingFinish = function (now) {
+    var startFrames = this.getFlyStartFrameUrls();
+
+    if (!startFrames.length) {
+      this.resumeWalking(now, true);
+      return;
+    }
+
+    this.landingPhase = "finish";
+    this.landingFrameUrls = startFrames.slice().reverse();
+    this.frameIndex = 0;
+    this.lastFrameAt = now;
+    this.img.src = this.landingFrameUrls[0];
+    this.applyPosition();
+  };
+
+  PigeonWebringPigeon.prototype.updateLandingFinish = function (now) {
+    if (!this.landingFrameUrls.length) {
+      this.resumeWalking(now, true);
+      return;
+    }
+
+    if (now - this.lastFrameAt >= config.landingFrameMs) {
+      this.lastFrameAt = now;
+      this.frameIndex += 1;
+
+      if (this.frameIndex >= this.landingFrameUrls.length) {
+        this.resumeWalking(now, true);
+        return;
+      }
+
+      this.img.src = this.landingFrameUrls[this.frameIndex];
+    }
+
+    this.applyPosition();
+  };
+
   PigeonWebringPigeon.prototype.updateWalk = function (now, dt) {
     if (now >= this.nextDecisionAt) {
       var roll = Math.random();
@@ -694,12 +922,22 @@
     }
   };
 
-  PigeonWebringPigeon.prototype.resumeWalking = function (now) {
+  PigeonWebringPigeon.prototype.resumeWalking = function (now, keepDirection) {
     this.mode = "walking";
+    this.leaving = false;
+    this.landingPhase = "";
+    this.landingFrameUrls = [];
+    this.flightMoving = false;
     this.frameIndex = 0;
     this.lastFrameAt = now;
+    if (keepDirection) {
+      this.startedAt = now;
+      this.setGroundDirection(now);
+    }
     this.img.src = state.frameUrls[0];
-    this.pickDirection();
+    if (!keepDirection) {
+      this.pickDirection();
+    }
     this.applyPosition();
   };
 
@@ -731,9 +969,35 @@
     var facingKind = this.hoverStoppedAt ? this.hoverIdleKind : this.mode;
     var desiredFacingDir = this.hoverStoppedAt ? this.hoverFacingDir : this.visualFacingDir;
     var facing = this.getFacingScale(facingKind, desiredFacingDir);
+    var renderOffset = this.getRenderOffset(facingKind);
 
-    this.el.style.transform = "translate3d(" + Math.round(this.x) + "px, " + Math.round(this.y) + "px, 0)";
+    this.applySpriteDimensions(facingKind);
+    this.el.style.transform = "translate3d(" + Math.round(this.x + renderOffset.x) + "px, " + Math.round(this.y + renderOffset.y) + "px, 0)";
     this.el.style.setProperty("--pigeon-webring-facing", facing);
+  };
+
+  PigeonWebringPigeon.prototype.getRenderOffset = function (kind) {
+    if (kind === "landing" && this.landingPhase === "finish") {
+      return {
+        x: typeof config.landingFinishOffsetX === "number"
+          ? config.landingFinishOffsetX
+          : (config.spriteWidth - config.flySpriteWidth) / 2,
+        y: typeof config.landingFinishOffsetY === "number"
+          ? config.landingFinishOffsetY
+          : config.spriteHeight - config.flySpriteHeight + config.landingYOffset
+      };
+    }
+
+    return { x: 0, y: 0 };
+  };
+
+  PigeonWebringPigeon.prototype.applySpriteDimensions = function (kind) {
+    var isFlightFrame = kind === "landing" || kind === "flying";
+    var width = isFlightFrame ? config.flySpriteWidth : config.spriteWidth;
+    var height = isFlightFrame ? config.flySpriteHeight : config.spriteHeight;
+
+    this.el.style.setProperty("--pigeon-webring-sprite-width", width + "px");
+    this.el.style.setProperty("--pigeon-webring-sprite-height", height + "px");
   };
 
   PigeonWebringPigeon.prototype.getFacingScale = function (kind, desiredFacingDir) {
@@ -741,12 +1005,189 @@
     return nativeFacing === desiredFacingDir ? "1" : "-1";
   };
 
-  PigeonWebringPigeon.prototype.beginLeaving = function () {
+  PigeonWebringPigeon.prototype.beginLeaving = function (now) {
     this.leaving = true;
-    this.img.src = state.frameUrls[0];
-    this.el.classList.add("pigeon-webring--leaving");
+    this.mode = "flying";
+    this.hoverStoppedAt = 0;
+    this.hoverFrameUrls = null;
+    this.hoverIdleKind = "";
+    this.frameIndex = 0;
+    this.flightLoopDirection = 1;
+    this.flightMoving = false;
+    this.lastFrameAt = now;
+    this.syncFacingWithVelocity();
 
-    window.setTimeout(this.destroy.bind(this), 950);
+    if (!state.flyFrameUrls.length) {
+      this.destroy();
+      return;
+    }
+
+    this.img.src = state.flyFrameUrls[0];
+    this.setFlightVectorToExit();
+    this.applyPosition();
+    this.rafId = window.requestAnimationFrame(this.tick);
+  };
+
+  PigeonWebringPigeon.prototype.updateFlying = function (now, dt) {
+    if (now - this.lastFrameAt >= config.flyFrameMs) {
+      this.lastFrameAt = now;
+      this.advanceFlyAwayFrame();
+    }
+
+    if (this.flightMoving) {
+      this.x += this.flightVelX * config.flySpeedPxPerSecond * dt;
+      this.y += this.flightVelY * config.flySpeedPxPerSecond * dt;
+    }
+
+    this.applyPosition();
+
+    if (this.isOffscreen()) {
+      this.destroy();
+      return;
+    }
+
+    this.rafId = window.requestAnimationFrame(this.tick);
+  };
+
+  PigeonWebringPigeon.prototype.getLandingStartPoint = function () {
+    var padding = config.flightEdgePadding;
+    var targetCenterX = this.landingTargetX + config.spriteWidth / 2;
+    var distanceToLeft = targetCenterX;
+    var distanceToRight = Math.max(0, window.innerWidth - targetCenterX);
+    var fromLeft = distanceToLeft <= distanceToRight;
+    var highestStartY = Math.max(8, this.landingTargetY - config.flySpriteHeight);
+    var preferredStartY = window.innerHeight * randomBetween(0.06, 0.24);
+    var startY = Math.min(highestStartY, preferredStartY);
+
+    startY = Math.max(8, startY);
+
+    return {
+      x: fromLeft ? -config.flySpriteWidth - padding : window.innerWidth + padding,
+      y: startY
+    };
+  };
+
+  PigeonWebringPigeon.prototype.setFlightVector = function (targetX, targetY) {
+    var dx = targetX - this.x;
+    var dy = targetY - this.y;
+    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    this.flightTargetX = targetX;
+    this.flightTargetY = targetY;
+    this.flightVelX = dx / dist;
+    this.flightVelY = dy / dist;
+    if (Math.abs(this.flightVelX) >= 0.001) {
+      this.visualFacingDir = this.flightVelX >= 0 ? 1 : -1;
+    }
+  };
+
+  PigeonWebringPigeon.prototype.setFlightVectorToExit = function () {
+    var rect = this.getRect();
+    var padding = config.flightEdgePadding;
+    var targetX = this.visualFacingDir >= 0
+      ? window.innerWidth + rect.width + padding
+      : -rect.width - padding;
+    var targetY = Math.max(-rect.height - padding, this.y - window.innerHeight * 0.45 - randomBetween(60, 160));
+
+    this.setFlightVector(targetX, targetY);
+  };
+
+  PigeonWebringPigeon.prototype.hasReachedPoint = function (targetX, targetY) {
+    var dx = targetX - this.x;
+    var dy = targetY - this.y;
+    var remainingDot = dx * this.flightVelX + dy * this.flightVelY;
+
+    return remainingDot <= 0 || Math.sqrt(dx * dx + dy * dy) <= config.flySpeedPxPerSecond / 30;
+  };
+
+  PigeonWebringPigeon.prototype.isOffscreen = function () {
+    var rect = this.getRect();
+    var padding = config.flightEdgePadding;
+
+    return (
+      this.x < -rect.width - padding ||
+      this.x > window.innerWidth + padding ||
+      this.y < -rect.height - padding ||
+      this.y > window.innerHeight + padding
+    );
+  };
+
+  PigeonWebringPigeon.prototype.getFlyLoopBounds = function () {
+    var total = state.flyFrameUrls.length;
+    var start = Math.max(0, Math.floor(config.flyStartFrameCount) || 0);
+    var count = Math.max(1, Math.floor(config.flyLoopFrameCount) || 1);
+    var end;
+
+    if (!total) {
+      return { start: 0, end: 0 };
+    }
+
+    start = Math.min(start, total - 1);
+    end = Math.min(total - 1, start + count - 1);
+
+    return { start: start, end: Math.max(start, end) };
+  };
+
+  PigeonWebringPigeon.prototype.getFlyStartFrameUrls = function () {
+    var total = state.flyFrameUrls.length;
+    var count = Math.max(0, Math.floor(config.flyStartFrameCount) || 0);
+
+    if (!total || !count) return [];
+    return state.flyFrameUrls.slice(0, Math.min(count, total));
+  };
+
+  PigeonWebringPigeon.prototype.setFlyFrame = function (frameIndex) {
+    if (!state.flyFrameUrls.length) return;
+
+    this.frameIndex = Math.max(0, Math.min(state.flyFrameUrls.length - 1, frameIndex));
+    this.img.src = state.flyFrameUrls[this.frameIndex];
+  };
+
+  PigeonWebringPigeon.prototype.advanceFlyAwayFrame = function () {
+    var loopBounds = this.getFlyLoopBounds();
+
+    if (!state.flyFrameUrls.length) return;
+
+    if (this.frameIndex < loopBounds.start) {
+      this.setFlyFrame(this.frameIndex + 1);
+      if (this.frameIndex >= loopBounds.start) {
+        this.flightMoving = true;
+      }
+      return;
+    }
+
+    this.flightMoving = true;
+    this.advanceFlyLoopFrame();
+  };
+
+  PigeonWebringPigeon.prototype.advanceFlyLoopFrame = function () {
+    var loopBounds = this.getFlyLoopBounds();
+    var nextFrame;
+
+    if (!state.flyFrameUrls.length) return;
+
+    if (this.frameIndex < loopBounds.start || this.frameIndex > loopBounds.end) {
+      this.flightLoopDirection = 1;
+      this.setFlyFrame(loopBounds.start);
+      return;
+    }
+
+    if (loopBounds.start === loopBounds.end) {
+      this.setFlyFrame(loopBounds.start);
+      return;
+    }
+
+    nextFrame = this.frameIndex + this.flightLoopDirection;
+
+    if (nextFrame > loopBounds.end) {
+      this.flightLoopDirection = -1;
+      nextFrame = loopBounds.end - 1;
+    } else if (nextFrame < loopBounds.start) {
+      this.flightLoopDirection = 1;
+      nextFrame = loopBounds.start + 1;
+    }
+
+    this.setFlyFrame(nextFrame);
   };
 
   PigeonWebringPigeon.prototype.destroy = function () {

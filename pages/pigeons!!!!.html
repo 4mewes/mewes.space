@@ -77,6 +77,43 @@
         background: #00ff00;
       }
 
+      .pigeon-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .webring-button {
+        position: fixed;
+        top: 20px;
+        right: 16px;
+        z-index: 2;
+        color: #111;
+        background: #fff;
+        font-size: 48px;
+        text-decoration: none;
+        transform-origin: center;
+        animation: webring-wobble 2s ease-in-out infinite;
+      }
+
+      .webring-button:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes webring-wobble {
+        0%,
+        40%,
+        100% {
+          transform: rotate(0deg);
+        }
+
+        20% {
+          transform: rotate(8deg);
+        }
+      }
+
       .download-note {
         margin-top: 8px;
       }
@@ -99,9 +136,12 @@
   <body>
     <div class="scene-layer" id="scene-layer" aria-hidden="true"></div>
     <p><a href="../index.html">Home</a></p>
+    <a class="webring-button" href="webring.html">web ring</a>
     <p>if the internet wants to be a public space, it needs pigeons; <strong>click</strong> to feed</p>
     <section class="download-section">
-      <a class="virus-download" href="https://chromewebstore.google.com/detail/ngmaagmlmbbkminhnlokimgmhpihodfm?utm_source=item-share-cb" target="_blank" rel="noopener noreferrer">Download now</a>
+      <div class="pigeon-actions">
+        <a class="virus-download" href="https://chromewebstore.google.com/detail/ngmaagmlmbbkminhnlokimgmhpihodfm?utm_source=item-share-cb" target="_blank" rel="noopener noreferrer">Download now</a>
+      </div>
       <p class="download-note"><sub>(not a virus just my pigeon extension)</sub></p>
     </section>
     <script>

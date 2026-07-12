@@ -76,6 +76,13 @@
   pointer-events: auto;
 }
 
+.pigeon-webring--no-link,
+.pigeon-webring--no-link .pigeon-webring__link,
+.pigeon-webring--no-link .pigeon-webring__sprite-link,
+.pigeon-webring--no-link .pigeon-webring__sprite {
+  cursor: default;
+}
+
 .pigeon-webring__bird {
   display: flex;
   flex-direction: column;
@@ -132,24 +139,9 @@
   width: var(--pigeon-webring-sprite-width, 96px);
   height: var(--pigeon-webring-sprite-height, 72px);
   object-fit: contain;
+  object-position: center bottom;
   transform: scaleX(var(--pigeon-webring-facing, 1));
   transform-origin: center bottom;
   cursor: url("assets/vista_globe_arrow_cursor_48.png") 21 18, url("assets/vista_globe_arrow_cursor_32.png") 14 12, pointer;
   pointer-events: none;
-}
-
-.pigeon-webring--leaving .pigeon-webring__bird {
-  animation: pigeon-webring-fly-away 900ms ease-in forwards;
-}
-
-@keyframes pigeon-webring-fly-away {
-  0% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--pigeon-webring-fly-drift, 90px), -180px, 0) rotate(-8deg) scale(0.82);
-  }
 }

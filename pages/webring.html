@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pigeon Webring</title>
+    <script src="../webring/pigeon-sites.js"></script>
+  </head>
+  <body>
+    <h1>Pigeon Webring</h1>
+    <p><a href="../index.html">Home</a></p>
+    <p>your chance to bring some pigeons to your site</p>
+
+    <h2>Pages</h2>
+    <p>! This site list is automated. Please <a href="mailto:4mewes@proton.me?subject=Pigeon%20Webring%20report&body=Reported%20page%3A%20%0AReason%3A%20">report</a> any inappropriate site !</p>
+    <ul id="pigeon-site-list"></ul>
+
+    <h2>How to join</h2>
+    <p>Add this script to your page:</p>
+    <div style="display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap;">
+      <pre style="display: inline-block; max-width: 100%; background: #eee; padding: 1em; overflow-x: auto; margin: 0;"><code id="pigeon-webring-embed">&lt;script src="https://mewes-space.xyz/webring/pigeon-webring.js" defer&gt;&lt;/script&gt;</code></pre>
+      <button type="button" id="copy-pigeon-webring-script">Copy</button>
+    </div>
+
+    <script>
+      window.PigeonWebringConfig = {
+        sites: [{ url: "https://pigeon.invalid/", label: "coo" }],
+        initialDelayMs: 500,
+        intervalMs: 30000,
+        linkEnabled: false,
+        showInfoLink: false,
+        heartbeatEndpoint: ""
+      };
+    </script>
+    <script src="../webring/pigeon-webring.js" defer></script>
+
+    <script>
+      const copyButton = document.getElementById("copy-pigeon-webring-script");
+      const embedCode = document.getElementById("pigeon-webring-embed");
+      const siteList = document.getElementById("pigeon-site-list");
+      const sitesEndpoint = typeof window.PigeonWebringSitesEndpoint === "string" ? window.PigeonWebringSitesEndpoint.trim() : "";
+
+      function fallbackCopyText(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.append(textarea);
+        textarea.select();
+
+        try {
+          document.execCommand("copy");
+          return Promise.resolve();
+        } catch (error) {
+          return Promise.reject(error);
+        } finally {
+          textarea.remove();
+        }
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+        }
+
+        return fallbackCopyText(text);
+      }
+
+      copyButton.addEventListener("click", () => {
+        copyText(embedCode.textContent).then(() => {
+          copyButton.textContent = "Copied";
+          setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1500);
+        });
+      });
+
+      function parseSites(data) {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.urls)) return data.urls;
+        if (data && Array.isArray(data.sites)) return data.sites;
+        return [];
+      }
+
+      function normalizeSite(site) {
+        const value = typeof site === "string" ? site : site && site.url;
+        if (!value) return null;
+
+        const href = /^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? value : `https://${value}`;
+
+        try {
+          const url = new URL(href);
+          return {
+            href: url.href,
+            label: url.href.replace(/\/$/, "")
+          };
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function renderSites(sites) {
+        const normalizedSites = sites.map(normalizeSite).filter(Boolean);
+
+        siteList.replaceChildren(...normalizedSites.map((site) => {
+          const item = document.createElement("li");
+          const link = document.createElement("a");
+
+          link.href = site.href;
+          link.textContent = site.label;
+
+          item.append(link);
+          return item;
+        }));
+      }
+
+      if (sitesEndpoint) {
+        fetch(sitesEndpoint, {
+          method: "GET",
+          credentials: "omit",
+          cache: "no-store"
+        })
+          .then((response) => {
+            if (!response.ok) throw new Error("Pigeon Webring sites request failed");
+            return response.json();
+          })
+          .then((data) => renderSites(parseSites(data)))
+          .catch(() => renderSites([]));
+      } else if (Array.isArray(window.PigeonWebringSites)) {
+        renderSites(window.PigeonWebringSites);
+      } else {
+        renderSites([]);
+      }
+    </script>
+  </body>
+</html>
