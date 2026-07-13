@@ -664,7 +664,7 @@
     this.hoverFacingDir = 1;
     this.destroyed = false;
     this.labelMessages = getLabelMessages(target);
-    this.labelMessageIndex = 0;
+    this.labelMessageIndex = Math.floor(Math.random() * this.labelMessages.length);
     this.labelTimerId = 0;
 
     this.createDom();
@@ -709,6 +709,7 @@
     } else {
       link.style.cursor = "default";
       spriteLink.style.cursor = "default";
+      bird.addEventListener("click", this.advanceLabelMessage.bind(this));
     }
 
     img.className = "pigeon-webring__sprite";
@@ -741,9 +742,22 @@
     if (intervalMs <= 0 || this.labelMessages.length < 2) return;
 
     this.labelTimerId = window.setInterval(function () {
-      self.labelMessageIndex = (self.labelMessageIndex + 1) % self.labelMessages.length;
-      self.updateLabelMessage();
+      self.advanceLabelMessage();
     }, intervalMs);
+  };
+
+  PigeonWebringPigeon.prototype.advanceLabelMessage = function () {
+    var nextIndex;
+
+    if (this.labelMessages.length < 2) return;
+
+    nextIndex = Math.floor(Math.random() * (this.labelMessages.length - 1));
+    if (nextIndex >= this.labelMessageIndex) {
+      nextIndex += 1;
+    }
+
+    this.labelMessageIndex = nextIndex;
+    this.updateLabelMessage();
   };
 
   PigeonWebringPigeon.prototype.updateLabelMessage = function () {
