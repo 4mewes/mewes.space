@@ -122,6 +122,7 @@
     },
     pointerTrackingInstalled: false,
     sites: [],
+    shownTargetKeys: [],
     timerId: null,
     running: false
   };
@@ -310,6 +311,7 @@
 
     loadSites(function (sites) {
       state.sites = normalizeSites(sites);
+      state.shownTargetKeys = [];
       api.sites = state.sites;
       start();
     });
@@ -436,9 +438,33 @@
     var candidates = state.sites.filter(function (site) {
       return site.normalizedHostname !== currentHost;
     });
+    var unseenCandidates;
+    var target;
 
     if (!candidates.length) return null;
-    return candidates[Math.floor(Math.random() * candidates.length)];
+
+    state.shownTargetKeys = state.shownTargetKeys.filter(function (key) {
+      return candidates.some(function (site) {
+        return getTargetKey(site) === key;
+      });
+    });
+
+    unseenCandidates = candidates.filter(function (site) {
+      return state.shownTargetKeys.indexOf(getTargetKey(site)) === -1;
+    });
+
+    if (!unseenCandidates.length) {
+      state.shownTargetKeys = [];
+      unseenCandidates = candidates;
+    }
+
+    target = unseenCandidates[Math.floor(Math.random() * unseenCandidates.length)];
+    state.shownTargetKeys.push(getTargetKey(target));
+    return target;
+  }
+
+  function getTargetKey(site) {
+    return site.normalizedHostname || site.url;
   }
 
   function start() {
