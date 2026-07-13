@@ -177,7 +177,7 @@
         bottomPigeonStuff.style.setProperty("--bottom-pigeon-offset", "0px");
 
         const sectionTop = bottomPigeonStuff.getBoundingClientRect().top + window.scrollY;
-        const justBelowViewport = window.innerHeight;
+        const justBelowViewport = window.innerHeight - 1;
         const offset = Math.max(0, justBelowViewport - sectionTop);
 
         bottomPigeonStuff.style.setProperty("--bottom-pigeon-offset", `${offset}px`);
