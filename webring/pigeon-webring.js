@@ -57,7 +57,7 @@
     infoHref: "https://mewes-space.xyz/pages/webring",
     infoIcon: "app-icon-image.png",
     infoLabel: "Web Pigeons",
-    infoText: "this site is inhabited by pigeons",
+    infoText: "this page is inhabited by pigeons",
     showInfoLink: true,
     linkPrefix: "",
     linkTarget: "_blank",
