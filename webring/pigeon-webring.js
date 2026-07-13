@@ -666,6 +666,7 @@
     this.labelMessages = getLabelMessages(target);
     this.labelMessageIndex = Math.floor(Math.random() * this.labelMessages.length);
     this.labelTimerId = 0;
+    this.linksEnabled = config.linkEnabled !== false;
 
     this.createDom();
     this.startLabelMessages();
@@ -762,6 +763,7 @@
 
   PigeonWebringPigeon.prototype.updateLabelMessage = function () {
     var message = this.labelMessages[this.labelMessageIndex];
+    var oldCenterX = this.getCenterX();
 
     if (this.labelEl) {
       this.labelEl.textContent = this.getLabelText(message);
@@ -770,6 +772,31 @@
     if (this.spriteLinkEl) {
       this.spriteLinkEl.setAttribute("aria-label", message);
     }
+
+    if (!this.linksEnabled) {
+      this.keepCenterX(oldCenterX);
+    }
+  };
+
+  PigeonWebringPigeon.prototype.getCenterX = function () {
+    var rect;
+
+    if (!this.el) return this.x + config.spriteWidth / 2;
+
+    rect = this.getRect();
+    return this.x + rect.width / 2;
+  };
+
+  PigeonWebringPigeon.prototype.keepCenterX = function (centerX) {
+    var rect;
+    var maxX;
+
+    if (!this.el) return;
+
+    rect = this.getRect();
+    maxX = Math.max(0, window.innerWidth - rect.width - 12);
+    this.x = Math.min(Math.max(centerX - rect.width / 2, 12), maxX);
+    this.applyPosition();
   };
 
   PigeonWebringPigeon.prototype.pickStart = function () {
