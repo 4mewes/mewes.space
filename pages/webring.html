@@ -12,7 +12,7 @@
       }
 
       .bottom-pigeon-stuff {
-        margin-top: clamp(120px, 20vh, 220px);
+        margin-top: var(--bottom-pigeon-offset, 0px);
       }
 
       .bottom-pigeon-stuff img {
@@ -169,5 +169,23 @@
       <img src="../webring/memes/6.pigeon-call.jpg" alt="">
       <p><a href="https://youtu.be/9xpX_YsHe8c">https://youtu.be/9xpX_YsHe8c</a></p>
     </div>
+
+    <script>
+      const bottomPigeonStuff = document.querySelector(".bottom-pigeon-stuff");
+
+      function placeBottomPigeonStuff() {
+        bottomPigeonStuff.style.setProperty("--bottom-pigeon-offset", "0px");
+
+        const sectionTop = bottomPigeonStuff.getBoundingClientRect().top + window.scrollY;
+        const justBelowViewport = window.innerHeight + 8;
+        const offset = Math.max(0, justBelowViewport - sectionTop);
+
+        bottomPigeonStuff.style.setProperty("--bottom-pigeon-offset", `${offset}px`);
+      }
+
+      placeBottomPigeonStuff();
+      window.addEventListener("load", placeBottomPigeonStuff);
+      window.addEventListener("resize", placeBottomPigeonStuff);
+    </script>
   </body>
 </html>
