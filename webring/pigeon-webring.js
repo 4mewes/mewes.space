@@ -15,6 +15,7 @@
     sitesScript: "pigeon-sites.js",
     sitesEndpoint: "",
     heartbeatEndpoint: "https://jhufnopbeulclqelxgyo.supabase.co/functions/v1/heartbeat",
+    canonicalUrl: "",
     assetBase: "assets/",
     initialDelayMinMs: 10000,
     initialDelayMaxMs: 30000,
@@ -255,9 +256,11 @@
   function sendHeartbeat() {
     var endpoint = typeof config.heartbeatEndpoint === "string" ? config.heartbeatEndpoint.trim() : "";
     var protocol = window.location.protocol;
+    var heartbeatUrl = getHeartbeatUrl();
 
     if (!endpoint || typeof window.fetch !== "function") return;
     if (protocol !== "http:" && protocol !== "https:") return;
+    if (!heartbeatUrl) return;
 
     window.fetch(resolveUrl(endpoint), {
       method: "POST",
@@ -268,10 +271,41 @@
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        url: window.location.origin,
+        url: heartbeatUrl,
+        origin: window.location.origin,
         href: window.location.href
       })
     }).catch(function () {});
+  }
+
+  function getHeartbeatUrl() {
+    return getConfiguredCanonicalUrl() || getDocumentCanonicalUrl() || window.location.origin;
+  }
+
+  function getConfiguredCanonicalUrl() {
+    var canonicalUrl = typeof config.canonicalUrl === "string" ? config.canonicalUrl.trim() : "";
+
+    return canonicalUrl ? normalizeHeartbeatUrl(canonicalUrl) : "";
+  }
+
+  function getDocumentCanonicalUrl() {
+    var canonical = document.querySelector('link[rel~="canonical"][href]');
+    var ogUrl = document.querySelector('meta[property="og:url"][content]');
+    var url = canonical && canonical.href ? canonical.href : "";
+
+    if (!url && ogUrl && ogUrl.content) {
+      url = ogUrl.content;
+    }
+
+    return url ? normalizeHeartbeatUrl(url) : "";
+  }
+
+  function normalizeHeartbeatUrl(url) {
+    try {
+      return new URL(url, window.location.href).href;
+    } catch (error) {
+      return "";
+    }
   }
 
   function loadSitesScriptFallback(callback) {
