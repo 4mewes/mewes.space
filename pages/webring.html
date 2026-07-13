@@ -9,15 +9,15 @@
   <body>
     <h1>Pigeon Webring</h1>
     <p><a href="../index.html">Home</a></p>
-    <p>pigeons were used for delivering messages for millenia... they are back in a new, more digital than ever, form.</p>
-    <p>if you agree to home pigeons on your website they will also carry your URL into the vast world wide web.</p>
+    <p>pigeons were used for delivering messages for millenia... they are back in a new form more digital than ever.</p>
+    <p>if you agree to home pigeons on your website they will carry your URL into the vast world wide web while delivering the URLs of fellow pigeon-keepers to your homepage.</p>
 
     <h2>Pages</h2>
     <p><i>! This site list is automated. Please <a href="mailto:4mewes@proton.me?subject=Pigeon%20Webring%20report&body=Reported%20page%3A%20%0AReason%3A%20">report</a> any inappropriate site !</i></p>
     <ul id="pigeon-site-list"></ul>
 
     <h2>How to join</h2>
-    <p>Add this script to your page and you are in! Beware this is only allowed if you like pigeons.</p>
+    <p>Add this script to your page and you are in!</p>
     <div style="display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap;">
       <pre style="display: inline-block; max-width: 100%; background: #eee; padding: 1em; overflow-x: auto; margin: 0;"><code id="pigeon-webring-embed">&lt;script src="https://mewes-space.xyz/webring/pigeon-webring.js" defer&gt;&lt;/script&gt;</code></pre>
       <button type="button" id="copy-pigeon-webring-script">Copy</button>
@@ -29,6 +29,9 @@
         initialDelayMs: 500,
         intervalMs: 30000,
         linkEnabled: false,
+        leaveEnabled: false,
+        labelMessages: ["coo", "join now!", "I love pigeons", "according to reddit, elite pigeons can fly a distance of 600-800km a day", "my favorite pokémon is pidgey", "pigeons can recognize and remember human faces", "pigeons symbolize peace", "pigeons are very adaptable, they even thrive in the internet"],
+        labelMessageIntervalMs: 10000,
         showInfoLink: false,
         heartbeatEndpoint: ""
       };

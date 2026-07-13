@@ -63,6 +63,9 @@
     linkTarget: "_blank",
     linkRel: "noopener noreferrer",
     linkEnabled: true,
+    leaveEnabled: true,
+    labelMessages: [],
+    labelMessageIntervalMs: 0,
     frames: [
       "walk1_0003.png",
       "walk1_0007.png",
@@ -575,6 +578,22 @@
     return getTimingRange("respawnDelayMinMs", "respawnDelayMaxMs", "intervalMs");
   }
 
+  function getLabelMessages(target) {
+    var messages = Array.isArray(config.labelMessages) ? config.labelMessages : [];
+
+    messages = messages
+      .map(function (message) {
+        return String(message || "").trim();
+      })
+      .filter(Boolean);
+
+    return messages.length ? messages : [target.label];
+  }
+
+  function getLabelMessageIntervalMs() {
+    return Math.max(0, getNumber(config.labelMessageIntervalMs, 0));
+  }
+
   function getTimingRange(minKey, maxKey, legacyKey) {
     var hasMin = hasOwn(existingConfig, minKey);
     var hasMax = hasOwn(existingConfig, maxKey);
@@ -606,6 +625,8 @@
     this.onDestroy = onDestroy;
     this.el = null;
     this.birdEl = null;
+    this.labelEl = null;
+    this.spriteLinkEl = null;
     this.img = null;
     this.frameIndex = 0;
     this.lastFrameAt = 0;
@@ -642,8 +663,12 @@
     this.visualFacingDir = 1;
     this.hoverFacingDir = 1;
     this.destroyed = false;
+    this.labelMessages = getLabelMessages(target);
+    this.labelMessageIndex = 0;
+    this.labelTimerId = 0;
 
     this.createDom();
+    this.startLabelMessages();
     this.pickStart();
     this.tick = this.tick.bind(this);
     var now = performance.now();
@@ -669,10 +694,10 @@
     bird.className = "pigeon-webring__bird";
 
     link.className = "pigeon-webring__link";
-    link.textContent = config.linkPrefix ? config.linkPrefix + " " + this.target.label : this.target.label;
+    link.textContent = this.getLabelText(this.labelMessages[0]);
 
     spriteLink.className = "pigeon-webring__sprite-link";
-    spriteLink.setAttribute("aria-label", this.target.label);
+    spriteLink.setAttribute("aria-label", this.labelMessages[0]);
 
     if (linksEnabled) {
       link.href = this.target.url;
@@ -700,7 +725,37 @@
 
     this.el = el;
     this.birdEl = bird;
+    this.labelEl = link;
+    this.spriteLinkEl = spriteLink;
     this.img = img;
+  };
+
+  PigeonWebringPigeon.prototype.getLabelText = function (message) {
+    return config.linkPrefix ? config.linkPrefix + " " + message : message;
+  };
+
+  PigeonWebringPigeon.prototype.startLabelMessages = function () {
+    var intervalMs = getLabelMessageIntervalMs();
+    var self = this;
+
+    if (intervalMs <= 0 || this.labelMessages.length < 2) return;
+
+    this.labelTimerId = window.setInterval(function () {
+      self.labelMessageIndex = (self.labelMessageIndex + 1) % self.labelMessages.length;
+      self.updateLabelMessage();
+    }, intervalMs);
+  };
+
+  PigeonWebringPigeon.prototype.updateLabelMessage = function () {
+    var message = this.labelMessages[this.labelMessageIndex];
+
+    if (this.labelEl) {
+      this.labelEl.textContent = this.getLabelText(message);
+    }
+
+    if (this.spriteLinkEl) {
+      this.spriteLinkEl.setAttribute("aria-label", message);
+    }
   };
 
   PigeonWebringPigeon.prototype.pickStart = function () {
@@ -782,7 +837,7 @@
       this.resumeAfterHoverStop(now);
     }
 
-    if (!this.leaving && now - this.startedAt >= this.walkDurationMs) {
+    if (config.leaveEnabled !== false && !this.leaving && now - this.startedAt >= this.walkDurationMs) {
       this.beginLeaving(now);
     }
 
@@ -1308,6 +1363,11 @@
   PigeonWebringPigeon.prototype.destroy = function () {
     if (this.destroyed) return;
     this.destroyed = true;
+
+    if (this.labelTimerId) {
+      window.clearInterval(this.labelTimerId);
+      this.labelTimerId = 0;
+    }
 
     if (this.rafId) {
       window.cancelAnimationFrame(this.rafId);
