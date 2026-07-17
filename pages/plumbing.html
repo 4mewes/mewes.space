@@ -55,11 +55,21 @@
         z-index: 3;
         display: block;
         line-height: 0;
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+        transition: opacity 0.2s ease;
+      }
+
+      .see-link.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
       }
 
       .see-link img {
         display: block;
-        width: clamp(120px, 24vw, 193px);
+        width: clamp(60px, 12vw, 97px);
         height: auto;
       }
 
@@ -82,7 +92,7 @@
   </head>
   <body>
     <div class="float-layer" id="float-layer" aria-hidden="true"></div>
-    <a class="see-link" href="https://youtu.be/9MEa9ED1Jc0" target="_blank" rel="noopener noreferrer">
+    <a class="see-link" id="see-link" href="https://youtu.be/9MEa9ED1Jc0" target="_blank" rel="noopener noreferrer">
       <img src="../media/gifs/gifs-used/SEE.gif" alt="SEE">
     </a>
     <main>
@@ -135,6 +145,11 @@
 
       const floatLayer = document.getElementById("float-layer");
       const activePlumbingImages = new Set();
+      const seeLink = document.getElementById("see-link");
+
+      window.setTimeout(() => {
+        seeLink.classList.add("is-visible");
+      }, 10000);
 
       function randomFrom(items) {
         return items[Math.floor(Math.random() * items.length)];
