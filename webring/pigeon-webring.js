@@ -54,7 +54,7 @@
     pauseFrameMs: 650,
     spriteWidth: 96,
     spriteHeight: 72,
-    infoHref: "https://mewes-space.xyz/pages/webring",
+    infoHref: "https://mewes-space.xyz/pages/webring.html",
     infoIcon: "app-icon-image.png",
     infoLabel: "Web Pigeons",
     infoText: "this page is inhabited by pigeons",
