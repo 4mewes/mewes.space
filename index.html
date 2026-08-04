@@ -553,6 +553,7 @@
         "media/index-jpg/signs.jpg",
         "media/index-jpg/trap.jpg"
       ];
+      const dailyImageOffset = 7;
       const links = [
         { text: "hello", href: "pages/blog.html", action: "hello" },
         { text: "livecoding", href: "pages/livecoding.html" },
@@ -614,7 +615,7 @@
         indexImage.addEventListener("load", () => {
           indexImage.classList.add("is-loaded");
         }, { once: true });
-        indexImage.src = indexImages[dayNumber % indexImages.length];
+        indexImage.src = indexImages[(dayNumber + dailyImageOffset) % indexImages.length];
       }
 
       function currentNavMetrics() {
