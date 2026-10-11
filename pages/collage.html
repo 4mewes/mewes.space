@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>collage — mewes-space</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        padding: 20px 16px 16px;
+      }
+
+      .home {
+        display: inline-block;
+        margin: 0 0 24px;
+      }
+
+      .collage {
+        position: relative;
+        width: 3200px;
+        height: 2400px;
+      }
+
+      .collage img {
+        position: absolute;
+        display: block;
+        width: var(--image-width);
+        max-width: none;
+        height: auto;
+        box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+      }
+    </style>
+  </head>
+  <body>
+    <p class="home"><a href="../index.html">Home</a></p>
+
+    <main class="collage" aria-label="Outdoor poster collage">
+      <img src="../media/posters/outdoors/P1010009.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010010.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010011.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010015.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010016.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010017.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010018.JPG" alt="Outdoor poster photograph">
+      <img src="../media/posters/outdoors/P1010019.JPG" alt="Outdoor poster photograph">
+    </main>
+
+    <script>
+      const images = [...document.querySelectorAll(".collage img")];
+      const slots = [
+        { left: 3, top: 3, width: 23 },
+        { left: 36, top: 8, width: 18 },
+        { left: 68, top: 2, width: 25 },
+        { left: 12, top: 38, width: 21 },
+        { left: 45, top: 34, width: 26 },
+        { left: 76, top: 42, width: 17 },
+        { left: 5, top: 70, width: 25 },
+        { left: 50, top: 73, width: 22 }
+      ];
+
+      images.forEach((image, index) => {
+        const slot = slots[index];
+        const left = slot.left + (Math.random() * 10 - 5);
+        const top = slot.top + (Math.random() * 10 - 5);
+
+        image.style.left = `${Math.max(1, Math.min(left, 100 - slot.width))}%`;
+        image.style.top = `${Math.max(1, Math.min(top, 100 - slot.width))}%`;
+        image.style.setProperty("--image-width", `${slot.width * 32}px`);
+      });
+    </script>
+  </body>
+</html>
