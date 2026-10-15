@@ -42,13 +42,21 @@
         position: relative;
       }
 
-      .collage img {
+      .collage .poster {
         position: absolute;
         display: block;
         max-width: none;
         height: auto;
         box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
         cursor: zoom-in;
+      }
+
+      .collage .eye {
+        position: absolute;
+        display: block;
+        max-width: none;
+        height: auto;
+        pointer-events: none;
       }
 
       .zoom-lens {
@@ -79,14 +87,14 @@
 
     <div class="collage-viewport">
       <main class="collage" aria-label="Outdoor poster collage">
-        <img src="../media/posters/outdoors/P1010009.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010010.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010011.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010015.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010016.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010017.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010018.JPG" alt="Outdoor poster photograph">
-        <img src="../media/posters/outdoors/P1010019.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010009.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010010.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010011.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010015.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010016.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010017.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010018.JPG" alt="Outdoor poster photograph">
+        <img class="poster" src="../media/posters/outdoors/P1010019.JPG" alt="Outdoor poster photograph">
       </main>
     </div>
     <div class="zoom-lens" aria-hidden="true">
@@ -100,7 +108,17 @@
       const searchGif = document.querySelector(".search-gif");
       const zoomLens = document.querySelector(".zoom-lens");
       const zoomLensContent = document.querySelector(".zoom-lens__content");
-      const images = [...document.querySelectorAll(".collage img")];
+      const posterImages = [...document.querySelectorAll(".collage .poster")];
+      const eyeSources = ["eye.gif", "eyyyy.gif", "eyesmall.gif"];
+      const eyes = eyeSources.map((source) => {
+        const eye = document.createElement("img");
+
+        eye.className = "eye";
+        eye.alt = "";
+        eye.src = `../media/eye/${source}`;
+        collage.append(eye);
+        return eye;
+      });
       const lensScale = 5;
       const sourceZoom = 1.5;
       const sourceOverscan = 1.35;
@@ -134,6 +152,17 @@
         horizontalJitter: Math.random() * 12 - 6,
         verticalJitter: Math.random() * 12 - 6
       }));
+      const eyeSlots = [
+        { left: 18, top: 28, width: 4.5 },
+        { left: 71, top: 52, width: 5.5 },
+        { left: 42, top: 82, width: 3.5 },
+        { left: 14, top: 23, width: 4 },
+        { left: 92, top: 34, width: 4.5 },
+        { left: 77, top: 72, width: 3.5 },
+        { left: 31, top: 56, width: 5 },
+        { left: 57, top: 7, width: 3.5 },
+        { left: 88, top: 88, width: 4 }
+      ];
 
       function layoutPosters() {
         const canvasWidth = Math.max(180, window.innerWidth - 32);
@@ -148,7 +177,7 @@
         zoomLensContent.style.width = `${canvasWidth}px`;
         zoomLensContent.style.height = `${canvasHeight}px`;
 
-        images.forEach((image, index) => {
+        posterImages.forEach((image, index) => {
           const { slot, horizontalJitter, verticalJitter } = placements[index];
           const imageWidth = canvasWidth * slot.width / 100 * 0.45;
           const imageHeight = imageWidth * 0.75;
@@ -164,6 +193,15 @@
           image.style.left = `${left}px`;
           image.style.top = `${top}px`;
           image.style.width = `${imageWidth}px`;
+        });
+
+        eyes.forEach((eye, index) => {
+          const slot = eyeSlots[index];
+          const eyeWidth = canvasWidth * slot.width / 100;
+
+          eye.style.left = `${slot.left * canvasWidth / 100}px`;
+          eye.style.top = `${slot.top * canvasHeight / 100}px`;
+          eye.style.width = `${eyeWidth}px`;
         });
 
         hideZoomLens();
