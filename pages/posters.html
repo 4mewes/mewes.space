@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>posters — mewes-space</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        padding: 20px 16px 16px;
+      }
+
+      .home {
+        display: inline-block;
+        margin: 0 0 24px;
+      }
+
+      .search-gif {
+        display: block;
+        width: 110px;
+        height: auto;
+        margin: 0 0 10px;
+      }
+
+      .collage-viewport {
+        position: relative;
+        overflow: hidden;
+        margin-inline: auto;
+      }
+
+      .collage {
+        position: relative;
+      }
+
+      .collage img {
+        position: absolute;
+        display: block;
+        max-width: none;
+        height: auto;
+        box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+        cursor: zoom-in;
+      }
+
+      .zoom-lens {
+        position: fixed;
+        z-index: 1;
+        display: none;
+        width: min(600px, calc(100vw - 32px));
+        height: min(800px, calc(100vh - 32px));
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .zoom-lens.is-visible {
+        display: block;
+      }
+
+      .zoom-lens__content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform-origin: top left;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="home"><a href="../index.html">Home</a></p>
+    <img class="search-gif" src="../media/search/srchanim.gif" alt="Animated search magnifying glass">
+
+    <div class="collage-viewport">
+      <main class="collage" aria-label="Outdoor poster collage">
+        <img src="../media/posters/outdoors/P1010009.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010010.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010011.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010015.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010016.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010017.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010018.JPG" alt="Outdoor poster photograph">
+        <img src="../media/posters/outdoors/P1010019.JPG" alt="Outdoor poster photograph">
+      </main>
+    </div>
+    <div class="zoom-lens" aria-hidden="true">
+      <div class="collage zoom-lens__content"></div>
+    </div>
+
+    <script>
+      const collage = document.querySelector(".collage");
+      const collageViewport = document.querySelector(".collage-viewport");
+      const home = document.querySelector(".home");
+      const searchGif = document.querySelector(".search-gif");
+      const zoomLens = document.querySelector(".zoom-lens");
+      const zoomLensContent = document.querySelector(".zoom-lens__content");
+      const images = [...document.querySelectorAll(".collage img")];
+      const lensScale = 5;
+      const sourceZoom = 1.5;
+      const sourceOverscan = 1.35;
+      const lensGap = 16;
+      const viewportPadding = 16;
+      const lensMotion = 0.12;
+      let zoomedImage = null;
+      let activeLens = null;
+      const slots = [
+        { left: 2, top: 3, width: 12 },
+        { left: 38, top: 12, width: 9 },
+        { left: 81, top: 4, width: 15 },
+        { left: 9, top: 48, width: 11 },
+        { left: 53, top: 39, width: 13 },
+        { left: 87, top: 59, width: 8 },
+        { left: 1, top: 84, width: 14 },
+        { left: 70, top: 83, width: 12 }
+      ];
+
+      const shuffledSlots = [...slots];
+      for (let index = shuffledSlots.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        const temporarySlot = shuffledSlots[index];
+
+        shuffledSlots[index] = shuffledSlots[swapIndex];
+        shuffledSlots[swapIndex] = temporarySlot;
+      }
+
+      const placements = shuffledSlots.map((slot) => ({
+        slot,
+        horizontalJitter: Math.random() * 12 - 6,
+        verticalJitter: Math.random() * 12 - 6
+      }));
+
+      function layoutPosters() {
+        const canvasWidth = Math.max(180, window.innerWidth - 32);
+        const collageTop = collageViewport.getBoundingClientRect().top;
+        const canvasHeight = Math.max(180, window.innerHeight - collageTop - 16);
+        const edgePadding = 24;
+
+        collageViewport.style.width = `${canvasWidth}px`;
+        collageViewport.style.height = `${canvasHeight}px`;
+        collage.style.width = `${canvasWidth}px`;
+        collage.style.height = `${canvasHeight}px`;
+        zoomLensContent.style.width = `${canvasWidth}px`;
+        zoomLensContent.style.height = `${canvasHeight}px`;
+
+        images.forEach((image, index) => {
+          const { slot, horizontalJitter, verticalJitter } = placements[index];
+          const imageWidth = canvasWidth * slot.width / 100 * 0.45;
+          const imageHeight = imageWidth * 0.75;
+          const left = Math.max(edgePadding, Math.min(
+            (slot.left + horizontalJitter) * canvasWidth / 100,
+            canvasWidth - imageWidth - edgePadding
+          ));
+          const top = Math.max(edgePadding, Math.min(
+            (slot.top + verticalJitter) * canvasHeight / 100,
+            canvasHeight - imageHeight - edgePadding
+          ));
+
+          image.style.left = `${left}px`;
+          image.style.top = `${top}px`;
+          image.style.width = `${imageWidth}px`;
+        });
+
+        hideZoomLens();
+      }
+
+      layoutPosters();
+      window.addEventListener("resize", layoutPosters);
+      searchGif.addEventListener("load", layoutPosters);
+
+      collageViewport.addEventListener("pointermove", (event) => {
+        if (!(event.target instanceof HTMLImageElement)) {
+          hideZoomLens();
+          return;
+        }
+
+        const image = event.target;
+        const imageRect = image.getBoundingClientRect();
+
+        if (zoomedImage !== image) {
+          zoomedImage = image;
+          setLensContent(image, imageRect);
+        }
+
+        positionLensBesideImage(imageRect, event);
+        scrollLensContent(imageRect, event);
+        zoomLens.classList.add("is-visible");
+      });
+
+      function setLensContent(image, imageRect) {
+        const lensWidth = Math.min(600, window.innerWidth - viewportPadding * 2);
+        const lensHeight = Math.min(800, window.innerHeight - viewportPadding * 2);
+        const displayScale = sourceZoom * Math.max(
+          lensScale,
+          lensWidth * sourceOverscan / imageRect.width,
+          lensHeight * sourceOverscan / imageRect.height
+        );
+        const zoomedClone = image.cloneNode(true);
+
+        activeLens = {
+          width: lensWidth,
+          height: lensHeight,
+          scale: displayScale
+        };
+        zoomLens.style.width = `${activeLens.width}px`;
+        zoomLens.style.height = `${activeLens.height}px`;
+        zoomedClone.style.left = "0";
+        zoomedClone.style.top = "0";
+        zoomedClone.style.width = `${imageRect.width * activeLens.scale}px`;
+        zoomedClone.style.cursor = "default";
+        zoomLensContent.replaceChildren(zoomedClone);
+      }
+
+      function scrollLensContent(imageRect, event) {
+        if (!activeLens) return;
+
+        const imageX = (event.clientX - imageRect.left) * activeLens.scale;
+        const imageY = (event.clientY - imageRect.top) * activeLens.scale;
+
+        zoomLensContent.style.transform = `translate(${activeLens.width / 2 - imageX}px, ${activeLens.height / 2 - imageY}px)`;
+      }
+
+      function positionLensBesideImage(imageRect, event) {
+        if (!activeLens) return;
+
+        const imageCenterX = imageRect.left + imageRect.width / 2;
+        const imageCenterY = imageRect.top + imageRect.height / 2;
+        const movementX = (event.clientX - imageCenterX) * lensMotion;
+        const movementY = (event.clientY - imageCenterY) * lensMotion;
+        const rightSide = imageRect.right + lensGap;
+        const leftSide = imageRect.left - activeLens.width - lensGap;
+        const preferredLeft = rightSide + activeLens.width <= window.innerWidth - viewportPadding
+          ? rightSide
+          : leftSide;
+        const maxLeft = window.innerWidth - activeLens.width - viewportPadding;
+        const maxTop = window.innerHeight - activeLens.height - viewportPadding;
+        const left = Math.max(viewportPadding, Math.min(preferredLeft + movementX, maxLeft));
+        const top = Math.max(
+          viewportPadding,
+          Math.min(imageCenterY - activeLens.height / 2 + movementY, maxTop)
+        );
+
+        zoomLens.style.left = `${left}px`;
+        zoomLens.style.top = `${top}px`;
+      }
+
+      function hideZoomLens() {
+        zoomLens.classList.remove("is-visible");
+        zoomedImage = null;
+        activeLens = null;
+        zoomLensContent.replaceChildren();
+      }
+
+      collageViewport.addEventListener("pointerleave", () => {
+        hideZoomLens();
+      });
+    </script>
+  </body>
+</html>
