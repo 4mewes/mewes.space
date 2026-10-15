@@ -110,13 +110,16 @@
       const zoomLensContent = document.querySelector(".zoom-lens__content");
       const posterImages = [...document.querySelectorAll(".collage .poster")];
       const eyeSources = ["eye.gif", "eyyyy.gif", "eyesmall.gif"];
-      const eyes = eyeSources.map((source) => {
+      const eyeStartDelays = [0, 2000, 4000];
+      const eyes = eyeSources.map((source, index) => {
         const eye = document.createElement("img");
 
         eye.className = "eye";
         eye.alt = "";
-        eye.src = `../media/eye/${source}`;
         collage.append(eye);
+        window.setTimeout(() => {
+          eye.src = `../media/eye/${source}?start=${eyeStartDelays[index]}`;
+        }, eyeStartDelays[index]);
         return eye;
       });
       const lensScale = 5;
@@ -131,10 +134,10 @@
         { left: 2, top: 3, width: 12 },
         { left: 38, top: 12, width: 9 },
         { left: 81, top: 4, width: 15 },
-        { left: 9, top: 48, width: 11 },
+        { left: 23, top: 48, width: 11 },
         { left: 53, top: 39, width: 13 },
-        { left: 87, top: 59, width: 8 },
-        { left: 1, top: 84, width: 14 },
+        { left: 46, top: 64, width: 8 },
+        { left: 10, top: 84, width: 14 },
         { left: 70, top: 83, width: 12 }
       ];
 
